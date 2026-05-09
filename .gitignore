@@ -23,6 +23,7 @@
 # misc
 .DS_Store
 *.pem
+photizo-network-international/
 
 # debug
 npm-debug.log*
