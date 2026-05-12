@@ -1,4 +1,5 @@
 import { ArrowUpRight, Lightbulb, Users } from "lucide-react";
+import { connection } from "next/server";
 
 import { Button } from "@/components/Button";
 import { Container } from "@/components/Container";
@@ -10,6 +11,7 @@ import { HomeHero } from "@/components/public/HomeHero";
 import { getPublishedPrograms } from "@/lib/data";
 
 export default async function HomePage() {
+  await connection();
   const programs = await getPublishedPrograms();
 
   return (
@@ -52,10 +54,11 @@ export default async function HomePage() {
             <div className="grid gap-5 sm:grid-cols-2">
               <div className="interactive-card rounded-[30px] border border-[rgba(11,11,11,0.08)] bg-white p-7 shadow-soft">
                 <div className="text-[11px] font-semibold uppercase tracking-[0.34em] text-[var(--dark-moss-green)]">
-                  Light
+                  John 8:32
                 </div>
                 <p className="mt-4 font-display text-3xl font-semibold tracking-[-0.05em] text-[var(--black)]">
-                  Truth that brings salvation, healing, and establishment.
+                  And ye shall know the truth, and the truth shall make you
+                  free.
                 </p>
               </div>
               <div className="interactive-card rounded-[30px] border border-[rgba(11,11,11,0.08)] bg-[linear-gradient(180deg,rgba(235,255,243,0.72),rgba(255,255,255,0.98))] p-7 shadow-soft">

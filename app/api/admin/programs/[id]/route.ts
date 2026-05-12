@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
 import { programCustomFieldSchema, programSchema } from "@/lib/schemas";
@@ -5,6 +6,15 @@ import { verifyAdminRequest } from "@/lib/server/admin-api";
 import { getServiceSupabaseClient } from "@/lib/supabase/server";
 
 const BUCKET_NAME = "program-flyers";
+
+function revalidateProgramRoutes(slug?: string) {
+  revalidatePath("/");
+  revalidatePath("/programs");
+
+  if (slug) {
+    revalidatePath(`/programs/${slug}`);
+  }
+}
 
 function isMissingRegistrationFormColumn(message?: string) {
   return Boolean(
@@ -75,13 +85,15 @@ async function patchProgramStatus(id: string, request: Request) {
     );
   }
 
-  const { error } = await supabase
+  const { data: updatedProgram, error } = await supabase
     .from("programs")
     .update({
       status,
       updated_at: new Date().toISOString(),
     })
-    .eq("id", id);
+    .eq("id", id)
+    .select("slug")
+    .maybeSingle();
 
   if (error) {
     return NextResponse.json(
@@ -93,6 +105,8 @@ async function patchProgramStatus(id: string, request: Request) {
       { status: 500 },
     );
   }
+
+  revalidateProgramRoutes(updatedProgram?.slug);
 
   return NextResponse.json({ success: true });
 }
@@ -231,6 +245,8 @@ export async function PATCH(request: Request, { params }: RouteProps) {
     );
   }
 
+  revalidateProgramRoutes(parsed.data.slug);
+
   return NextResponse.json({ success: true, needsSchemaUpgrade });
 }
 
@@ -252,6 +268,12 @@ export async function DELETE(_request: Request, { params }: RouteProps) {
     );
   }
 
+  const { data: existingProgram } = await supabase
+    .from("programs")
+    .select("slug")
+    .eq("id", id)
+    .maybeSingle();
+
   const { error } = await supabase.from("programs").delete().eq("id", id);
 
   if (error) {
@@ -264,6 +286,8 @@ export async function DELETE(_request: Request, { params }: RouteProps) {
       { status: 500 },
     );
   }
+
+  revalidateProgramRoutes(existingProgram?.slug);
 
   return NextResponse.json({ success: true });
 }

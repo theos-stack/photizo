@@ -52,27 +52,32 @@ export function ContactForm() {
     >
       <FormInput
         label="Full name"
+        placeholder="Simon Peter"
         error={form.formState.errors.full_name?.message}
         {...form.register("full_name")}
       />
       <FormInput
         label="Email address"
+        placeholder="SimonPeter@gmail.com"
         error={form.formState.errors.email?.message}
         {...form.register("email")}
       />
       <FormInput
         label="WhatsApp number"
+        placeholder="+234 801 234 5678"
         error={form.formState.errors.whatsapp?.message}
         {...form.register("whatsapp")}
       />
       <FormInput
         label="Subject"
+        placeholder="Prayer and spiritual counsel"
         error={form.formState.errors.subject?.message}
         {...form.register("subject")}
       />
       <div className="sm:col-span-2">
         <FormTextarea
           label="Message"
+          placeholder="Hello PHOTIZO, I would love someone to reach out and pray with me."
           error={form.formState.errors.message?.message}
           {...form.register("message")}
         />

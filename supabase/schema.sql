@@ -119,6 +119,12 @@ alter table public.contact_messages enable row level security;
 alter table public.follow_up_logs enable row level security;
 alter table public.site_settings enable row level security;
 
+drop policy if exists "Admins can view own admin record" on public.admin_users;
+create policy "Admins can view own admin record"
+on public.admin_users
+for select
+using (lower(email) = lower(coalesce(auth.jwt()->>'email', '')));
+
 create or replace function public.is_admin_user()
 returns boolean
 language sql

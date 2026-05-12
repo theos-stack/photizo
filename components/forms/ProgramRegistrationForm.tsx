@@ -182,36 +182,42 @@ export function ProgramRegistrationForm({
         <>
           <FormInput
             label="Full name"
+            placeholder="Simon Peter"
             error={form.formState.errors.full_name?.message}
             disabled={previewMode}
             {...form.register("full_name")}
           />
           <FormInput
             label="Email address"
+            placeholder="SimonPeter@gmail.com"
             error={form.formState.errors.email?.message}
             disabled={previewMode}
             {...form.register("email")}
           />
           <FormInput
             label="WhatsApp number"
+            placeholder="+234 801 234 5678"
             error={form.formState.errors.whatsapp?.message}
             disabled={previewMode}
             {...form.register("whatsapp")}
           />
           <FormInput
             label="Country"
+            placeholder="Israel"
             error={form.formState.errors.country?.message}
             disabled={previewMode}
             {...form.register("country")}
           />
           <FormInput
             label="State or city"
+            placeholder="Jerusalem"
             error={form.formState.errors.city?.message}
             disabled={previewMode}
             {...form.register("city")}
           />
           <FormInput
             label="How did you hear about us?"
+            placeholder="Through a disciple friend"
             error={form.formState.errors.how_did_you_hear?.message}
             disabled={previewMode}
             {...form.register("how_did_you_hear")}
@@ -297,6 +303,7 @@ export function ProgramRegistrationForm({
         <div className="sm:col-span-2">
           <FormTextarea
             label="Message or prayer request"
+            placeholder="Please keep me informed and pray with me concerning this meeting."
             error={form.formState.errors.message?.message}
             disabled={previewMode}
             {...form.register("message")}

@@ -64,31 +64,31 @@ export function AskQuestionForm() {
     >
       <FormInput
         label="Full name"
-        placeholder="Your full name"
+        placeholder="Simon Peter"
         error={form.formState.errors.full_name?.message}
         {...form.register("full_name")}
       />
       <FormInput
         label="Email address"
-        placeholder="you@example.com"
+        placeholder="SimonPeter@gmail.com"
         error={form.formState.errors.email?.message}
         {...form.register("email")}
       />
       <FormInput
         label="WhatsApp number"
-        placeholder="+234..."
+        placeholder="+234 801 234 5678"
         error={form.formState.errors.whatsapp?.message}
         {...form.register("whatsapp")}
       />
       <FormInput
         label="Country"
-        placeholder="Country"
+        placeholder="Israel"
         error={form.formState.errors.country?.message}
         {...form.register("country")}
       />
       <FormInput
         label="State or city"
-        placeholder="Lagos"
+        placeholder="Jerusalem"
         error={form.formState.errors.city?.message}
         {...form.register("city")}
       />
@@ -107,7 +107,7 @@ export function AskQuestionForm() {
       <div className="sm:col-span-2">
         <FormTextarea
           label="Your question"
-          placeholder="Share your question with as much clarity as you need."
+          placeholder="What does John 8:32 mean for a believer today?"
           error={form.formState.errors.question?.message}
           {...form.register("question")}
         />

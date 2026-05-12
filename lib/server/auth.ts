@@ -3,7 +3,32 @@ import "server-only";
 import { redirect } from "next/navigation";
 
 import { getServerSupabaseClient } from "@/lib/supabase/server";
+import { getServiceSupabaseClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/shared";
+
+function getConfiguredAdminEmails() {
+  return (process.env.ADMIN_EMAIL || "")
+    .split(/[;,]/)
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+async function hasAdminRecord(email: string, fallbackSupabase: Awaited<ReturnType<typeof getServerSupabaseClient>>) {
+  const serviceSupabase = getServiceSupabaseClient();
+  const client = serviceSupabase || fallbackSupabase;
+
+  if (!client) {
+    return false;
+  }
+
+  const { data: adminRecord } = await client
+    .from("admin_users")
+    .select("email")
+    .eq("email", email)
+    .maybeSingle();
+
+  return adminRecord?.email?.toLowerCase() === email;
+}
 
 export async function requireAdmin() {
   if (!hasSupabaseEnv()) {
@@ -23,17 +48,13 @@ export async function requireAdmin() {
     redirect("/admin/login");
   }
 
-  const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
-
-  const { data: adminRecord } = await supabase
-    .from("admin_users")
-    .select("email")
-    .eq("email", user.email.toLowerCase())
-    .maybeSingle();
+  const normalizedEmail = user.email.toLowerCase();
+  const configuredAdmins = getConfiguredAdminEmails();
+  const isConfiguredAdmin = configuredAdmins.includes(normalizedEmail);
+  const isDbAdmin = await hasAdminRecord(normalizedEmail, supabase);
 
   const isAdmin =
-    adminRecord?.email?.toLowerCase() === user.email.toLowerCase() ||
-    user.email.toLowerCase() === adminEmail;
+    isConfiguredAdmin || isDbAdmin;
 
   if (!isAdmin) {
     await supabase.auth.signOut();

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 
 import { Container } from "@/components/Container";
 import { EmptyState } from "@/components/EmptyState";
@@ -15,6 +16,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ProgramsPage() {
+  await connection();
   const programs = await getPublishedPrograms();
 
   return (

@@ -1,7 +1,5 @@
 import "server-only";
 
-import { cache } from "react";
-
 import { getServiceSupabaseClient } from "@/lib/supabase/server";
 import type {
   BiblicalQuestion,
@@ -49,7 +47,7 @@ async function selectRegistrationsWithProgramDetails() {
   return fallback;
 }
 
-export const getPublishedPrograms = cache(async () => {
+export async function getPublishedPrograms() {
   const supabase = getServiceSupabaseClient();
   if (!supabase) {
     return [] as Program[];
@@ -62,7 +60,7 @@ export const getPublishedPrograms = cache(async () => {
     .order("date", { ascending: true });
 
   return (data ?? []) as Program[];
-});
+}
 
 export async function getProgramBySlug(slug: string) {
   const supabase = getServiceSupabaseClient();

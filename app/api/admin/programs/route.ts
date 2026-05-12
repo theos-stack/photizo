@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
 import { programCustomFieldSchema, programSchema } from "@/lib/schemas";
@@ -5,6 +6,15 @@ import { verifyAdminRequest } from "@/lib/server/admin-api";
 import { getServiceSupabaseClient } from "@/lib/supabase/server";
 
 const BUCKET_NAME = "program-flyers";
+
+function revalidateProgramRoutes(slug?: string) {
+  revalidatePath("/");
+  revalidatePath("/programs");
+
+  if (slug) {
+    revalidatePath(`/programs/${slug}`);
+  }
+}
 
 function isMissingRegistrationFormColumn(message?: string) {
   return Boolean(
@@ -175,6 +185,8 @@ export async function POST(request: Request) {
       { status: 500 },
     );
   }
+
+  revalidateProgramRoutes(parsed.data.slug);
 
   return NextResponse.json({ success: true, needsSchemaUpgrade });
 }

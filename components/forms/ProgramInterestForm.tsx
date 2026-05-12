@@ -53,15 +53,15 @@ export function ProgramInterestForm({ compact = false }: { compact?: boolean }) 
       className={`grid gap-5 rounded-[32px] border border-[rgba(72,108,38,0.12)] bg-white p-6 shadow-soft ${compact ? "sm:grid-cols-2" : "sm:grid-cols-2 lg:grid-cols-3"} sm:p-8`}
       onSubmit={form.handleSubmit(onSubmit)}
     >
-      <FormInput label="Full name" error={form.formState.errors.full_name?.message} {...form.register("full_name")} />
-      <FormInput label="Email address" error={form.formState.errors.email?.message} {...form.register("email")} />
-      <FormInput label="WhatsApp number" error={form.formState.errors.whatsapp?.message} {...form.register("whatsapp")} />
-      <FormInput label="Country" error={form.formState.errors.country?.message} {...form.register("country")} />
-      <FormInput label="State or city" error={form.formState.errors.city?.message} {...form.register("city")} />
-      <FormInput label="Program of interest" error={form.formState.errors.program_of_interest?.message} {...form.register("program_of_interest")} />
-      <FormInput label="How did you hear about us?" error={form.formState.errors.how_did_you_hear?.message} {...form.register("how_did_you_hear")} />
+      <FormInput label="Full name" placeholder="Simon Peter" error={form.formState.errors.full_name?.message} {...form.register("full_name")} />
+      <FormInput label="Email address" placeholder="SimonPeter@gmail.com" error={form.formState.errors.email?.message} {...form.register("email")} />
+      <FormInput label="WhatsApp number" placeholder="+234 801 234 5678" error={form.formState.errors.whatsapp?.message} {...form.register("whatsapp")} />
+      <FormInput label="Country" placeholder="Israel" error={form.formState.errors.country?.message} {...form.register("country")} />
+      <FormInput label="State or city" placeholder="Jerusalem" error={form.formState.errors.city?.message} {...form.register("city")} />
+      <FormInput label="Program of interest" placeholder="School of Truth Gathering" error={form.formState.errors.program_of_interest?.message} {...form.register("program_of_interest")} />
+      <FormInput label="How did you hear about us?" placeholder="Through a disciple friend" error={form.formState.errors.how_did_you_hear?.message} {...form.register("how_did_you_hear")} />
       <div className={compact ? "sm:col-span-2" : "sm:col-span-2 lg:col-span-3"}>
-        <FormTextarea label="Message or prayer request" error={form.formState.errors.message?.message} {...form.register("message")} />
+        <FormTextarea label="Message or prayer request" placeholder="Please keep me informed about your upcoming meetings and teachings." error={form.formState.errors.message?.message} {...form.register("message")} />
       </div>
       <div className={compact ? "sm:col-span-2" : "sm:col-span-2 lg:col-span-3"}>
         <Button type="submit" disabled={form.formState.isSubmitting}>

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { connection } from "next/server";
 
 import { ProgramDetailView } from "@/components/programs/ProgramDetailView";
 import { getProgramBySlug } from "@/lib/data";
@@ -25,6 +26,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function ProgramDetailPage({ params }: PageProps) {
+  await connection();
   const { slug } = await params;
   const program = await getProgramBySlug(slug);
 

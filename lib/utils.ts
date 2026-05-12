@@ -46,6 +46,42 @@ export function slugify(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+export function parseTwelveHourTime(value?: string | null) {
+  if (!value) {
+    return { hour: "", minute: "", period: "" as "" | "AM" | "PM" };
+  }
+
+  const match = value.match(
+    /^\s*(\d{1,2})(?::(\d{2}))?\s*([AaPp][Mm])(?:\s*[A-Za-z]*)?\s*$/,
+  );
+
+  if (!match) {
+    return { hour: "", minute: "", period: "" as "" | "AM" | "PM" };
+  }
+
+  const hour = String(Number(match[1]));
+  const minute = (match[2] || "00").padStart(2, "0");
+  const period = match[3].toUpperCase() as "AM" | "PM";
+
+  if (!Number.isInteger(Number(hour)) || Number(hour) < 1 || Number(hour) > 12) {
+    return { hour: "", minute: "", period: "" as "" | "AM" | "PM" };
+  }
+
+  return { hour, minute, period };
+}
+
+export function buildTwelveHourTime(
+  hour?: string | null,
+  minute?: string | null,
+  period?: string | null,
+) {
+  if (!hour || !minute || !period) {
+    return "";
+  }
+
+  return `${Number(hour)}:${minute.padStart(2, "0")} ${period.toUpperCase()}`;
+}
+
 export function getAbsoluteUrl(path = "/") {
   const base =
     process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||

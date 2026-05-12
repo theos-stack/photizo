@@ -11,6 +11,7 @@ import { Button } from "@/components/Button";
 import { FormInput } from "@/components/forms/FormInput";
 import { FormSelect } from "@/components/forms/FormSelect";
 import { FormTextarea } from "@/components/forms/FormTextarea";
+import { TimePickerField } from "@/components/forms/TimePickerField";
 import { programSchema } from "@/lib/schemas";
 import type { Program } from "@/lib/types";
 import { slugify } from "@/lib/utils";
@@ -74,6 +75,10 @@ export function ProgramForm({ program }: { program?: Program | null }) {
   const watchedFields = useWatch({
     control: form.control,
     name: "registration_form",
+  });
+  const watchedTime = useWatch({
+    control: form.control,
+    name: "time",
   });
 
   const customFieldCountLabel = useMemo(() => {
@@ -193,11 +198,17 @@ export function ProgramForm({ program }: { program?: Program | null }) {
         error={form.formState.errors.date?.message}
         {...form.register("date")}
       />
-      <FormInput
+      <TimePickerField
         label="Time"
-        placeholder="5:00 PM WAT"
+        value={watchedTime}
+        onChange={(value) =>
+          form.setValue("time", value, {
+            shouldDirty: true,
+            shouldValidate: true,
+          })
+        }
         error={form.formState.errors.time?.message}
-        {...form.register("time")}
+        helperText="Select a suggested time or type one in 12-hour format, for example 5:00 PM."
       />
       <FormInput
         label="Registration deadline"
@@ -207,19 +218,19 @@ export function ProgramForm({ program }: { program?: Program | null }) {
       />
       <FormInput
         label="Location"
-        placeholder="Venue"
+        placeholder="Upper Room Centre, Lagos"
         error={form.formState.errors.location?.message}
         {...form.register("location")}
       />
       <FormInput
         label="Online meeting link"
-        placeholder="https://..."
+        placeholder="https://meet.google.com/photizo-room"
         error={form.formState.errors.online_link?.message}
         {...form.register("online_link")}
       />
       <FormInput
         label="Existing flyer URL"
-        placeholder="https://..."
+        placeholder="https://example.com/photizo-flyer.jpg"
         error={form.formState.errors.flyer_url?.message}
         {...form.register("flyer_url")}
       />
