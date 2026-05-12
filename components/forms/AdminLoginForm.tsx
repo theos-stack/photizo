@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -13,9 +13,15 @@ import { getBrowserSupabaseClient } from "@/lib/supabase/client";
 
 type FormValues = z.input<typeof adminLoginSchema>;
 
-export function AdminLoginForm() {
+export function AdminLoginForm({
+  initialMessage = "",
+  signOutOnMount = false,
+}: {
+  initialMessage?: string;
+  signOutOnMount?: boolean;
+}) {
   const router = useRouter();
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(initialMessage);
   const form = useForm<FormValues>({
     resolver: zodResolver(adminLoginSchema),
     defaultValues: {
@@ -23,6 +29,16 @@ export function AdminLoginForm() {
       password: "",
     },
   });
+
+  useEffect(() => {
+    const supabase = getBrowserSupabaseClient();
+
+    if (!signOutOnMount || !supabase) {
+      return;
+    }
+
+    void supabase.auth.signOut();
+  }, [signOutOnMount]);
 
   async function onSubmit(values: FormValues) {
     const supabase = getBrowserSupabaseClient();

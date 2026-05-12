@@ -1,7 +1,23 @@
 import { Container } from "@/components/Container";
 import { AdminLoginForm } from "@/components/forms/AdminLoginForm";
 
-export default function AdminLoginPage() {
+type PageProps = {
+  searchParams: Promise<{
+    unauthorized?: string;
+    setup?: string;
+  }>;
+};
+
+export default async function AdminLoginPage({ searchParams }: PageProps) {
+  const params = await searchParams;
+  const setup = params.setup === "1";
+  const unauthorized = params.unauthorized === "1";
+  const initialMessage = setup
+    ? "Supabase authentication is not configured yet."
+    : unauthorized
+      ? "This account signed in, but it is not yet approved for the PHOTIZO admin dashboard. Add the email to public.admin_users or include it in ADMIN_EMAIL, then try again."
+      : "";
+
   return (
     <div className="hero-glow flex min-h-screen items-center py-16 text-white">
       <Container className="grid gap-10 lg:grid-cols-[0.9fr_0.75fr] lg:items-center">
@@ -18,7 +34,10 @@ export default function AdminLoginPage() {
             messages, and settings.
           </p>
         </div>
-        <AdminLoginForm />
+        <AdminLoginForm
+          initialMessage={initialMessage}
+          signOutOnMount={unauthorized}
+        />
       </Container>
     </div>
   );

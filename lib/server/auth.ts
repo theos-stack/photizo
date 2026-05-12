@@ -57,7 +57,6 @@ export async function requireAdmin() {
     isConfiguredAdmin || isDbAdmin;
 
   if (!isAdmin) {
-    await supabase.auth.signOut();
     redirect("/admin/login?unauthorized=1");
   }
 
