@@ -27,6 +27,8 @@ const statusMap: Record<string, string> = {
   converted_to_teaching: "bg-violet-100 text-violet-800",
   archived: "bg-zinc-200 text-zinc-700",
   responded: "bg-emerald-100 text-emerald-800",
+  admin: "bg-sky-100 text-sky-800",
+  super_admin: "bg-violet-100 text-violet-800",
 };
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {

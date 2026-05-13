@@ -1,28 +1,5 @@
-import { getServerSupabaseClient, getServiceSupabaseClient } from "@/lib/supabase/server";
-
-function getConfiguredAdminEmails() {
-  return (process.env.ADMIN_EMAIL || "")
-    .split(/[;,]/)
-    .map((value) => value.trim().toLowerCase())
-    .filter(Boolean);
-}
-
-async function hasAdminRecord(email: string, fallbackSupabase: Awaited<ReturnType<typeof getServerSupabaseClient>>) {
-  const serviceSupabase = getServiceSupabaseClient();
-  const client = serviceSupabase || fallbackSupabase;
-
-  if (!client) {
-    return false;
-  }
-
-  const { data: adminRecord } = await client
-    .from("admin_users")
-    .select("email")
-    .eq("email", email)
-    .maybeSingle();
-
-  return adminRecord?.email?.toLowerCase() === email;
-}
+import { resolveAdminAccess } from "@/lib/server/admin-access";
+import { getServerSupabaseClient } from "@/lib/supabase/server";
 
 export async function verifyAdminRequest() {
   const supabase = await getServerSupabaseClient();
@@ -39,13 +16,24 @@ export async function verifyAdminRequest() {
     return { ok: false as const, user: null, supabase };
   }
 
-  const normalizedEmail = user.email.toLowerCase();
-  const configuredAdmins = getConfiguredAdminEmails();
-  const isConfiguredAdmin = configuredAdmins.includes(normalizedEmail);
-  const isDbAdmin = await hasAdminRecord(normalizedEmail, supabase);
+  const access = await resolveAdminAccess(user.email, supabase);
 
-  const ok =
-    isConfiguredAdmin || isDbAdmin;
+  return {
+    ok: access.isAdmin,
+    user,
+    supabase,
+    role: access.role,
+    isSuperAdmin: access.isSuperAdmin,
+    isBootstrapSuperAdmin: access.isBootstrapSuperAdmin,
+  };
+}
 
-  return { ok, user, supabase };
+export async function verifySuperAdminRequest() {
+  const auth = await verifyAdminRequest();
+
+  if (!auth.ok || !auth.isSuperAdmin) {
+    return { ...auth, ok: false as const };
+  }
+
+  return auth;
 }

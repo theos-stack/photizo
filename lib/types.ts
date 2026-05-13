@@ -1,4 +1,5 @@
 export type ProgramStatus = "draft" | "published" | "closed" | "completed";
+export type AdminRole = "admin" | "super_admin";
 export type RegistrationStatus =
   | "new"
   | "confirmed"
@@ -52,6 +53,15 @@ export type SiteSettings = {
   telegram?: string | null;
   created_at?: string;
   updated_at?: string;
+};
+
+export type AdminUser = {
+  id: string;
+  email: string;
+  full_name: string | null;
+  role: AdminRole;
+  created_at?: string;
+  is_bootstrap?: boolean;
 };
 
 export type Program = {
@@ -197,3 +207,5 @@ export const contactStatusOptions: ContactStatus[] = [
   "responded",
   "closed",
 ];
+
+export const adminRoleOptions: AdminRole[] = ["admin", "super_admin"];

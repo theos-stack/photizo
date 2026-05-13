@@ -1,7 +1,9 @@
 import "server-only";
 
 import { getServiceSupabaseClient } from "@/lib/supabase/server";
+import { getConfiguredSuperAdminEmails } from "@/lib/server/admin-access";
 import type {
+  AdminUser,
   BiblicalQuestion,
   ContactMessage,
   FollowUpLog,
@@ -106,6 +108,54 @@ export async function getSiteSettings() {
     .maybeSingle();
 
   return { ...defaultSettings, ...(data ?? {}) } as SiteSettings;
+}
+
+export async function getAdminUsers() {
+  const supabase = getServiceSupabaseClient();
+  const configuredSuperAdmins = getConfiguredSuperAdminEmails();
+  const fallbackRecords = configuredSuperAdmins.map((email) => ({
+    id: `bootstrap:${email}`,
+    email,
+    full_name: null,
+    role: "super_admin" as const,
+    is_bootstrap: true,
+  }));
+
+  if (!supabase) {
+    return fallbackRecords as AdminUser[];
+  }
+
+  const { data } = await supabase
+    .from("admin_users")
+    .select("*")
+    .order("created_at", { ascending: true });
+
+  const records = ((data ?? []) as AdminUser[]).map((record) => ({
+    ...record,
+    role:
+      configuredSuperAdmins.includes(record.email.toLowerCase()) ||
+      record.role === "super_admin"
+        ? "super_admin"
+        : "admin",
+    is_bootstrap: configuredSuperAdmins.includes(record.email.toLowerCase()),
+  }));
+
+  const seenEmails = new Set(records.map((record) => record.email.toLowerCase()));
+  const merged = [...records];
+
+  configuredSuperAdmins.forEach((email) => {
+    if (!seenEmails.has(email)) {
+      merged.push({
+        id: `bootstrap:${email}`,
+        email,
+        full_name: null,
+        role: "super_admin",
+        is_bootstrap: true,
+      });
+    }
+  });
+
+  return merged.sort((left, right) => left.email.localeCompare(right.email));
 }
 
 export async function getAdminStats() {

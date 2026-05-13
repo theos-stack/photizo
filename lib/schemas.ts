@@ -146,6 +146,25 @@ export const adminLoginSchema = z.object({
   password: z.string().min(6, "Enter your password."),
 });
 
+export const adminRoleSchema = z.enum(["admin", "super_admin"]);
+
+export const adminUserCreateSchema = z.object({
+  email: z.string().trim().email("Enter a valid email address."),
+  full_name: optionalString,
+  role: adminRoleSchema,
+  password: z
+    .string()
+    .trim()
+    .min(6, "Use a password of at least 6 characters.")
+    .optional()
+    .or(z.literal("")),
+});
+
+export const adminUserUpdateSchema = z.object({
+  full_name: optionalString,
+  role: adminRoleSchema,
+});
+
 export const programSchema = z.object({
   id: z.string().uuid().optional(),
   title: z.string().trim().min(3, "Title is required."),
