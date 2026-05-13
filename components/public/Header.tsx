@@ -25,8 +25,8 @@ export function Header() {
       transition={{ duration: 0.85, ease }}
       className="sticky top-0 z-50 border-b border-[rgba(11,11,11,0.06)] bg-[rgba(255,255,255,0.7)] backdrop-blur-2xl"
     >
-      <Container className="flex min-h-20 items-center justify-between gap-4">
-        <LogoPlaceholder tone="dark" />
+      <Container className="flex min-h-16 items-center justify-between gap-3 sm:min-h-20 sm:gap-4">
+        <LogoPlaceholder tone="dark" className="shrink min-w-0" />
 
         <nav className="hidden items-center gap-1 rounded-full border border-[rgba(11,11,11,0.06)] bg-white/72 px-2 py-1 lg:flex">
           {siteConfig.navItems.map((item) => {
@@ -56,7 +56,7 @@ export function Header() {
         <button
           type="button"
           onClick={() => setOpen((value) => !value)}
-          className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[rgba(11,11,11,0.08)] bg-white/78 text-[var(--black)] lg:hidden"
+          className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[rgba(11,11,11,0.08)] bg-white/78 text-[var(--black)] lg:hidden"
           aria-label="Toggle navigation"
           aria-expanded={open}
         >

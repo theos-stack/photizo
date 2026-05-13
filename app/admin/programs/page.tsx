@@ -14,7 +14,6 @@ import { requireAdmin } from "@/lib/server/auth";
 import { getAdminPrograms, getProgramRegistrations } from "@/lib/data";
 import {
   formatDate,
-  getAbsoluteUrl,
   isProgramRegistrationOpen,
 } from "@/lib/utils";
 import { programStatusOptions } from "@/lib/types";
@@ -104,7 +103,7 @@ export default async function AdminProgramsPage({
                   <Button
                     href={
                       program.status === "published"
-                        ? `/programs/${program.slug}#registration`
+                        ? `/programs/${program.slug}`
                         : `/admin/programs/preview?program=${program.id}#registration`
                     }
                     variant="ghost"
@@ -119,10 +118,10 @@ export default async function AdminProgramsPage({
                     View Registrations
                   </Link>
                   <CopyButton
-                    value={
+                    path={
                       program.status === "published"
-                        ? getAbsoluteUrl(`/programs/${program.slug}#registration`)
-                        : getAbsoluteUrl(`/admin/programs/preview?program=${program.id}#registration`)
+                        ? `/programs/${program.slug}`
+                        : `/admin/programs/preview?program=${program.id}#registration`
                     }
                     label={
                       program.status === "published"

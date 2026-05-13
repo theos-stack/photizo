@@ -8,7 +8,6 @@ import type { Program } from "@/lib/types";
 import {
   formatDate,
   formatDateTime,
-  getAbsoluteUrl,
   isProgramRegistrationOpen,
 } from "@/lib/utils";
 
@@ -27,7 +26,7 @@ export function ProgramDetailView({
 }: ProgramDetailViewProps) {
   const registrationOpen = isProgramRegistrationOpen(program);
   const canShowForm = previewMode || registrationOpen;
-  const publicLink = getAbsoluteUrl(`/programs/${program.slug}#registration`);
+  const publicLink = `/programs/${program.slug}`;
 
   return (
     <>
@@ -112,7 +111,7 @@ export function ProgramDetailView({
           </div>
         </Container>
       </section>
-      <section id="registration" className="py-20">
+      <section id="registration" className="scroll-mt-24 py-20">
         <Container>
           <SectionHeading
             eyebrow={previewMode ? "Form Preview" : "Registration"}

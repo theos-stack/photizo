@@ -8,7 +8,7 @@ export default function SalvationWelcomePage() {
     <>
       <PageHero
         eyebrow="Welcome"
-        title="Welcome Into New Life In Christ"
+        title="Welcome Into The New Life In Christ"
         description="If you believed the gospel and received Christ by faith, you have taken the most important step of your life. You are now called to grow in the knowledge of God, be planted in a Bible-believing church, learn the Scriptures, and walk with other believers."
       />
       <section className="py-20">

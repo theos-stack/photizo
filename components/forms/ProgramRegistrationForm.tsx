@@ -223,12 +223,7 @@ export function ProgramRegistrationForm({
             {...form.register("how_did_you_hear")}
           />
         </>
-      ) : (
-        <div className="sm:col-span-2 rounded-[24px] border border-[rgba(72,108,38,0.12)] bg-[var(--honeydew)]/45 px-5 py-4 text-sm leading-7 text-[rgba(11,11,11,0.72)]">
-          This meeting is using a custom registration form created specifically for
-          this program.
-        </div>
-      )}
+      ) : null}
 
       {registrationForm.map((field) => {
         const error =
