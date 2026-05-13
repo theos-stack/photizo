@@ -3,6 +3,7 @@ import "server-only";
 import { getServiceSupabaseClient } from "@/lib/supabase/server";
 import { getConfiguredSuperAdminEmails } from "@/lib/server/admin-access";
 import type {
+  AdminRole,
   AdminUser,
   BiblicalQuestion,
   ContactMessage,
@@ -113,11 +114,11 @@ export async function getSiteSettings() {
 export async function getAdminUsers() {
   const supabase = getServiceSupabaseClient();
   const configuredSuperAdmins = getConfiguredSuperAdminEmails();
-  const fallbackRecords = configuredSuperAdmins.map((email) => ({
+  const fallbackRecords: AdminUser[] = configuredSuperAdmins.map((email) => ({
     id: `bootstrap:${email}`,
     email,
     full_name: null,
-    role: "super_admin" as const,
+    role: "super_admin",
     is_bootstrap: true,
   }));
 
@@ -130,13 +131,14 @@ export async function getAdminUsers() {
     .select("*")
     .order("created_at", { ascending: true });
 
-  const records = ((data ?? []) as AdminUser[]).map((record) => ({
+  const records: AdminUser[] = ((data ?? []) as AdminUser[]).map((record) => ({
     ...record,
-    role:
+    role: (
       configuredSuperAdmins.includes(record.email.toLowerCase()) ||
       record.role === "super_admin"
         ? "super_admin"
-        : "admin",
+        : "admin"
+    ) as AdminRole,
     is_bootstrap: configuredSuperAdmins.includes(record.email.toLowerCase()),
   }));
 
