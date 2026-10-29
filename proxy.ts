@@ -8,16 +8,22 @@ import {
 } from "@/lib/supabase/shared";
 
 export async function proxy(request: NextRequest) {
-  if (!request.nextUrl.pathname.startsWith("/admin")) {
+  const pathname = request.nextUrl.pathname;
+  const isAdminRoute = pathname === "/admin" || pathname.startsWith("/admin/");
+  const isMemberRoute = pathname === "/streak" || pathname.startsWith("/streak/");
+
+  if (!isAdminRoute && !isMemberRoute) {
     return NextResponse.next();
   }
 
-  if (request.nextUrl.pathname === "/admin/login") {
+  if (pathname === "/admin/login") {
     return NextResponse.next();
   }
 
   if (!hasSupabaseEnv()) {
-    return NextResponse.redirect(new URL("/admin/login?setup=1", request.url));
+    return isAdminRoute
+      ? NextResponse.redirect(new URL("/admin/login?setup=1", request.url))
+      : NextResponse.next();
   }
 
   const response = NextResponse.next({
@@ -47,7 +53,7 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
+  if (!user && isAdminRoute) {
     return NextResponse.redirect(new URL("/admin/login", request.url));
   }
 
@@ -55,5 +61,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/streak/:path*"],
 };

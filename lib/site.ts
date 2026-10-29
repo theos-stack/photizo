@@ -16,6 +16,7 @@ export const siteConfig = {
   adminNav: [
     { href: "/admin/dashboard", label: "Overview" },
     { href: "/admin/programs", label: "Programs" },
+    { href: "/admin/prayer-streak", label: "Prayer Streak" },
     { href: "/admin/registrations", label: "Registrations" },
     { href: "/admin/salvation-responses", label: "Salvation Responses" },
     { href: "/admin/questions", label: "Biblical Questions" },

@@ -98,6 +98,17 @@ export default async function HomePage() {
       </section>
 
       <section className="py-20">
+        <Container className="grid gap-8 rounded-[36px] border border-[rgba(72,108,38,0.14)] bg-[#fbfaf6] p-8 shadow-soft lg:grid-cols-[1fr_auto] lg:items-center lg:p-10">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.32em] text-[var(--dark-moss-green)]">A steady rhythm of prayer</p>
+            <h2 className="mt-4 max-w-3xl font-display text-4xl font-bold tracking-tight sm:text-5xl">30 Days. 10 Minutes. A Life of Prayer.</h2>
+            <p className="mt-4 max-w-2xl text-base leading-8 text-[var(--muted-foreground)]">Take ten focused minutes each day with an original prayer guide, a Scripture reference, and a gentle check-in. Begin at your own pace.</p>
+          </div>
+          <Button href="/prayer-streak" size="lg">Join the Prayer Streak</Button>
+        </Container>
+      </section>
+
+      <section className="py-20">
         <Container>
           <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
             <SectionHeading

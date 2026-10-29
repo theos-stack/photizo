@@ -1,5 +1,6 @@
 import { Footer } from "@/components/public/Footer";
 import { Header } from "@/components/public/Header";
+import { PwaInstallPrompt } from "@/components/PwaInstallPrompt";
 
 export default function PublicLayout({
   children,
@@ -9,6 +10,7 @@ export default function PublicLayout({
       <Header />
       <main className="flex-1">{children}</main>
       <Footer />
+      <PwaInstallPrompt />
     </div>
   );
 }
