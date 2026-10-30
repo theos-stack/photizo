@@ -4,6 +4,14 @@ import { Button } from "@/components/Button";
 import { Container } from "@/components/Container";
 import { PageHero } from "@/components/public/PageHero";
 import { getServerSupabaseClient } from "@/lib/supabase/server";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "30-Day Prayer Streak Challenge",
+  description: "Build a steady rhythm of prayer with a short daily guide, Scripture, and room to meet each day honestly.",
+  alternates: { canonical: "/prayer-streak" },
+  openGraph: { url: "/prayer-streak", title: "30-Day Prayer Streak Challenge | PHOTIZO", description: "Thirty days of Scripture, focused prayer, and a gentle daily check-in." },
+};
 
 const steps = ["Choose a time zone and begin on your enrollment day.","Spend ten minutes with the daily Scripture reference and prayer guide.","Mark your day complete when you have finished praying. Missed days do not erase the days you completed."];
 export default async function PrayerStreakPage() {

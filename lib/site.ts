@@ -2,7 +2,7 @@ export const siteConfig = {
   name: "PHOTIZO Network International",
   shortName: "PHOTIZO",
   tagline: "Enlightened by Truth. Raised for the Kingdom.",
-  siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+  siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "https://photizonetwork.com",
   description:
     "PHOTIZO Network International is committed to evangelizing men, raising disciples, and establishing the truth of God's kingdom in hearts across the world.",
   navItems: [

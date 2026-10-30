@@ -16,6 +16,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/salvation",
     "/salvation/prayer",
     "/salvation/welcome",
+    "/prayer-streak",
   ].map((path) => ({
     url: `${siteConfig.siteUrl}${path}`,
     changeFrequency: "weekly" as const,
