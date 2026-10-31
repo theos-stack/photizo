@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, BookOpen, Check, Clock3 } from "lucide-react";
 import { Container } from "@/components/Container";
 import { PRAYER_CAMPAIGN_DEFAULT } from "@/lib/prayer-campaign";
+import { getServerSupabaseClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "30 Days. A Life of Prayer. | PHOTIZO",
@@ -12,8 +13,23 @@ export const metadata: Metadata = {
 };
 
 export default async function PublicPrayerStreakPage() {
-  const accountHref = "/streak/register?next=%2Fmember";
-  const startLabel = new Intl.DateTimeFormat("en-GB", { timeZone: PRAYER_CAMPAIGN_DEFAULT.timeZone, day: "numeric", month: "long", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZoneName: "short" }).format(new Date(PRAYER_CAMPAIGN_DEFAULT.startsAt));
+  const accountHref = "/streak/register?next=%2Fstreak%2Fjoin";
+  const loginHref = "/streak/login?next=%2Fstreak%2Fjoin";
+  const supabase = await getServerSupabaseClient();
+  const [campaignResult, clockResult] = supabase
+    ? await Promise.all([
+      supabase.from("prayer_challenges").select("starts_at,campaign_timezone,duration_days,status").eq("slug", "30-day-prayer-streak-2026").maybeSingle(),
+      supabase.rpc("prayer_campaign_server_now"),
+    ])
+    : [{ data: null, error: new Error("Supabase is not configured") }, { data: null, error: new Error("Campaign clock is unavailable") }];
+  const campaign = campaignResult.data;
+  const scheduleConfirmed = !campaignResult.error && campaign?.status === "published" && Boolean(campaign.starts_at) && !clockResult.error && typeof clockResult.data === "string";
+  const startsAt = scheduleConfirmed ? campaign.starts_at : null;
+  const timeZone = scheduleConfirmed ? campaign.campaign_timezone : PRAYER_CAMPAIGN_DEFAULT.timeZone;
+  const durationDays = scheduleConfirmed ? campaign.duration_days : PRAYER_CAMPAIGN_DEFAULT.durationDays;
+  const startLabel = startsAt
+    ? new Intl.DateTimeFormat("en-GB", { timeZone, day: "numeric", month: "long", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZoneName: "short" }).format(new Date(startsAt))
+    : null;
   return <main className="min-h-screen overflow-hidden bg-[#f7f5ed] text-[#173326]">
     <section className="relative isolate flex min-h-[min(880px,100svh)] items-center overflow-hidden bg-[var(--evergreen)] py-12 text-white sm:py-16">
       <div aria-hidden="true" className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_70%_12%,rgba(214,195,138,.19),transparent_35%),linear-gradient(145deg,transparent_45%,rgba(255,255,255,.035))]" />
@@ -24,11 +40,11 @@ export default async function PublicPrayerStreakPage() {
           <p className="mt-6 max-w-md text-base leading-7 text-white/75 sm:text-lg">Show up daily. Pray intentionally. Build a consistent life of prayer.</p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link href={accountHref} className="inline-flex min-h-13 items-center justify-center gap-3 rounded-full bg-[#dfcf9c] px-7 py-3.5 text-sm font-semibold text-[#173326] transition hover:bg-[#eadfbd] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-white">Create your PHOTIZO account <ArrowRight className="h-4 w-4"/></Link>
-            <Link href="/streak/login?next=%2Fmember" className="inline-flex min-h-13 items-center justify-center rounded-full border border-white/25 px-7 py-3.5 text-sm font-semibold text-white/85 transition hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-white">Already a member? Sign in</Link>
+            <Link href={loginHref} className="inline-flex min-h-13 items-center justify-center rounded-full border border-white/25 px-7 py-3.5 text-sm font-semibold text-white/85 transition hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-white">Already a member? Sign in</Link>
             <a href="#how-it-works" className="inline-flex min-h-13 items-center justify-center rounded-full border border-white/25 px-7 py-3.5 text-sm font-semibold text-white/85 transition hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-white">How It Works</a>
           </div>
-          <div className="mt-9 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-white/15 pt-5 text-xs text-white/60"><span className="inline-flex items-center gap-2"><Clock3 className="h-4 w-4 text-[#dfcf9c]"/>{PRAYER_CAMPAIGN_DEFAULT.durationDays} days</span><span>Planned start: {startLabel}</span></div>
-          <p className="mt-3 max-w-lg text-xs leading-5 text-white/55">The campaign schedule and enrollment are being prepared. Create or sign in to your PHOTIZO account now; the challenge calendar will open after launch setup is verified.</p>
+          <div className="mt-9 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-white/15 pt-5 text-xs text-white/60"><span className="inline-flex items-center gap-2"><Clock3 className="h-4 w-4 text-[#dfcf9c]"/>{durationDays} days</span><span>{startLabel ? `Campaign starts: ${startLabel}` : "Campaign start time is being confirmed"}</span></div>
+          <p className="mt-3 max-w-lg text-xs leading-5 text-white/55">{scheduleConfirmed ? "Create or sign in to your PHOTIZO account to reserve your place. Your shared calendar and first prayer guide open when the campaign begins." : "We are confirming the campaign schedule. Your place cannot be reserved until the start time is verified."}</p>
         </div>
         <div className="mx-auto w-full max-w-md">
           <div className="rounded-[30px] border border-white/20 bg-[#f7f5ed] p-5 text-[#173326] shadow-[0_30px_90px_rgba(0,0,0,.24)] sm:p-7">

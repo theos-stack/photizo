@@ -4,10 +4,10 @@ test("public prayer landing page is accessible without authentication", async ({
   const response = await page.goto("/streak");
   expect(response?.status()).toBe(200);
   await expect(page.getByRole("heading", { name: /30 Days\./i })).toBeVisible();
-  await expect(page.getByRole("link", { name: /Create your PHOTIZO account/i })).toHaveAttribute("href", "/streak/register?next=%2Fmember");
-  await expect(page.getByRole("link", { name: /Already a member\? Sign in/i })).toHaveAttribute("href", "/streak/login?next=%2Fmember");
-  await expect(page.getByText(/Planned start:/i)).toBeVisible();
-  await expect(page.getByText(/campaign schedule and enrollment are being prepared/i)).toBeVisible();
+  await expect(page.getByRole("link", { name: /Create your PHOTIZO account/i })).toHaveAttribute("href", "/streak/register?next=%2Fstreak%2Fjoin");
+  await expect(page.getByRole("link", { name: /Already a member\? Sign in/i })).toHaveAttribute("href", "/streak/login?next=%2Fstreak%2Fjoin");
+  await expect(page.getByText(/Campaign starts:|Campaign start time is being confirmed/i)).toBeVisible();
+  await expect(page.getByText(/reserve your place|confirming the campaign schedule/i).first()).toBeVisible();
 
   await page.goto("/prayer-streak");
   await expect(page).toHaveURL(/\/streak$/);
