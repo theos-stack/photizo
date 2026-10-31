@@ -135,7 +135,7 @@ export function MemberAuthForm({ mode, next = "/member", initialError }: { mode:
             <h1 className="mt-3 font-display text-4xl font-semibold tracking-[-.03em] text-[#182a1e] sm:text-[2.8rem]">{heading}</h1>
             <p className="mt-3 max-w-md text-sm leading-6 text-black/55">{mode === "reset" ? "Enter your email and we’ll send a secure link to choose a new password." : "Sign in or create your account to continue."}</p>
 
-            {mode !== "reset" && !emailChoice && <div className="mt-7 space-y-3">{googleOAuthEnabled && <Button type="button" variant="ghost" className="w-full border-black/10" disabled={busy} onClick={signInWithGoogle}>Continue with Google</Button>}<Button type="button" variant="ghost" className="w-full border-black/10" disabled={busy} onClick={() => setEmailChoice(true)}>Continue with Email</Button></div>}
+            {mode !== "reset" && <div className="mt-7 space-y-3">{googleOAuthEnabled && <Button type="button" variant="ghost" className="w-full border-black/10" disabled={busy} onClick={signInWithGoogle}>Continue with Google</Button>}{!emailChoice && <Button type="button" variant="ghost" className="w-full border-black/10" disabled={busy} onClick={() => setEmailChoice(true)}>Continue with Email</Button>}</div>}
             {mode !== "reset" && emailChoice && googleOAuthEnabled && <div className="my-5 flex items-center gap-3 text-[10px] font-semibold tracking-[.16em] text-black/35"><span className="h-px flex-1 bg-black/10"/>EMAIL<span className="h-px flex-1 bg-black/10"/></div>}
 
             {(mode === "reset" || emailChoice) && <form className="mt-6 space-y-4" onSubmit={submit}>

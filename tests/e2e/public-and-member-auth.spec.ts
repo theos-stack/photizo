@@ -47,15 +47,17 @@ test("challenge and unified auth screenshots are captured for visual review", as
 test("unified email authentication and password recovery render safely", async ({ page }) => {
   await page.goto("/streak/login?next=%2Fstreak%2Fjoin");
   await expect(page.getByRole("heading", { name: "Sign in to PHOTIZO" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Continue with Google" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Continue with Email" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Continue with Google" })).toHaveCount(0);
   await page.getByRole("button", { name: "Continue with Email" }).click();
   await expect(page.getByLabel("Email address")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Continue with Google" })).toBeVisible();
   await expect(page.getByRole("textbox", { name: /Password/ })).toBeVisible();
   await expect(page.getByRole("link", { name: "Forgot password?" })).toBeVisible();
 
   await page.goto("/streak/register?next=%2Fstreak%2Fjoin");
   await expect(page.getByRole("heading", { name: "Sign in to PHOTIZO" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Continue with Google" })).toBeVisible();
   await expect(page.getByLabel("Display name")).toBeVisible();
   await expect(page.getByLabel("Email address")).toBeVisible();
 
