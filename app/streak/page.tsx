@@ -4,7 +4,7 @@ import { Container } from "@/components/Container";
 import { requireMember, getLocalDate } from "@/lib/server/member";
 
 export default async function StreakDashboardPage({searchParams}:{searchParams:Promise<{challenge?:string}>}) {
-  const { supabase, user, profile } = await requireMember();
+  const { supabase, user, profile } = await requireMember("/streak");
   const params=await searchParams;
   const [{data:enrollments},{data:selectedChallenge}]=await Promise.all([supabase.from("prayer_enrollments").select("id,start_local_date,status,challenge_id,enrolled_at,enrollment_timezone,total_completed_days,current_streak,longest_streak,missed_days").eq("member_id",user.id).order("enrolled_at",{ascending:false}).limit(20),params.challenge?supabase.from("prayer_challenges").select("id,title,description,duration_days,minutes_per_day").eq("id",params.challenge).eq("status","published").maybeSingle():Promise.resolve({data:null})]);
   const enrollment=params.challenge?enrollments?.find(item=>item.challenge_id===params.challenge)||null:enrollments?.find(item=>item.status==="active")||enrollments?.[0]||null;

@@ -31,14 +31,14 @@ export function Header({ memberEmail }: { memberEmail: string | null }) {
 
   const accountLinks = memberEmail ? (
     <>
-      <Link href="/streak" className="rounded-full px-3 py-2 text-sm font-semibold text-[var(--evergreen)] hover:bg-[var(--honeydew)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--evergreen)]">My Prayer Dashboard</Link>
+      <Link href="/member" className="rounded-full px-3 py-2 text-sm font-semibold text-[var(--evergreen)] hover:bg-[var(--honeydew)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--evergreen)]">Member space</Link>
       <Link href="/streak/settings" className="rounded-full px-3 py-2 text-sm text-black/65 hover:bg-black/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--evergreen)]">Account</Link>
       <button type="button" onClick={signOut} className="rounded-full px-3 py-2 text-sm text-black/65 hover:bg-black/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--evergreen)]">Sign out</button>
     </>
   ) : (
     <>
       <Link href="/streak/login" className="rounded-full px-3 py-2 text-sm font-semibold text-[var(--evergreen)] hover:bg-[var(--honeydew)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--evergreen)]">Sign in</Link>
-      <Button href="/streak/register" size="sm">Join Challenge</Button>
+      <Button href="/prayer-streak" size="sm">Join Challenge</Button>
       <Link href="/salvation" className="hidden rounded-full px-2 py-2 text-xs font-semibold text-black/55 hover:text-[var(--evergreen)] 2xl:inline">I Just Got Saved</Link>
     </>
   );
@@ -105,13 +105,14 @@ export function Header({ memberEmail }: { memberEmail: string | null }) {
               {memberEmail ? (
                 <>
                   <p className="px-4 text-xs text-black/50">Signed in as {memberEmail}</p>
+                  <Link href="/member" onClick={() => setOpenForPath(null)} className="rounded-xl px-4 py-3 text-sm font-semibold text-[var(--evergreen)] hover:bg-[var(--honeydew)]">Member home</Link>
                   <Link href="/streak/settings" onClick={() => setOpenForPath(null)} className="rounded-xl px-4 py-3 text-sm font-medium text-black/70 hover:bg-black/[0.045]">Account settings</Link>
                   <button type="button" onClick={signOut} className="rounded-xl px-4 py-3 text-left text-sm font-semibold text-[var(--evergreen)] hover:bg-[var(--honeydew)]">Sign out</button>
                 </>
               ) : (
                 <>
                   <Link href="/streak/login" onClick={() => setOpenForPath(null)} className="rounded-xl px-4 py-3 text-sm font-semibold text-[var(--evergreen)] hover:bg-[var(--honeydew)]">Sign in</Link>
-                  <Button href="/streak/register" className="w-full" onClick={() => setOpenForPath(null)}>Join Challenge</Button>
+                  <Button href="/prayer-streak" className="w-full" onClick={() => setOpenForPath(null)}>Join Challenge</Button>
                   <Link href="/salvation" onClick={() => setOpenForPath(null)} className="rounded-xl px-4 py-3 text-center text-sm text-black/55 hover:bg-black/[0.045]">I Just Got Saved</Link>
                 </>
               )}

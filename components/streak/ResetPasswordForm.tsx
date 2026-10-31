@@ -27,7 +27,7 @@ export function ResetPasswordForm() {
     setBusy(false);
     if (updateError) { setError(true); setMessage("This recovery link may have expired. Request a fresh password reset link and try again."); return; }
     setError(false); setMessage("Your password has been updated.");
-    router.replace("/streak");
+    router.replace("/member");
     router.refresh();
   }
 

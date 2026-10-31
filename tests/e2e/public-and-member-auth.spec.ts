@@ -9,7 +9,7 @@ test("public pages and prayer challenge render without backend credentials", asy
 
   await page.goto("/prayer-streak");
   await expect(page.getByRole("heading", { name: /A Deeper Prayer Life Begins With One Day/i })).toBeVisible();
-  await expect(page.getByRole("link", { name: /Join the Prayer Challenge/i }).first()).toHaveAttribute("href", "/streak/register");
+  await expect(page.getByRole("link", { name: /Join the Prayer Challenge/i }).first()).toHaveAttribute("href", /\/streak\/register\?next=/);
   await expect(page.getByRole("heading", { name: "A simple rhythm. Your own pace." })).toBeVisible();
 });
 
@@ -71,13 +71,13 @@ test("desktop and mobile challenge and authentication layouts are captured for v
 
 test("member auth forms render and report missing configuration without exposing a session", async ({ page }) => {
   await page.goto("/streak/login?next=%2Fstreak%2Fsettings");
-  await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Welcome back to PHOTIZO" })).toBeVisible();
   await expect(page.getByLabel("Email address")).toBeVisible();
   await expect(page.getByRole("button", { name: "Continue with Google" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Show password" })).toBeVisible();
 
   await page.goto("/streak/register");
-  await expect(page.getByRole("heading", { name: "Create your prayer account" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Create your PHOTIZO account" })).toBeVisible();
   await expect(page.getByLabel("Display name")).toBeVisible();
 
   await page.goto("/streak/forgot-password");
@@ -88,7 +88,21 @@ test("member auth forms render and report missing configuration without exposing
 test("protected member dashboard redirects unauthenticated visitors to member login", async ({ page }) => {
   await page.goto("/streak");
   await expect(page).toHaveURL(/\/streak\/login(?:\?|$)/);
-  await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Welcome back to PHOTIZO" })).toBeVisible();
+  await page.goto("/member");
+  await expect(page).toHaveURL(/\/streak\/login\?next=%2Fmember/);
+});
+
+test("auth callback rejects missing and unsupported email tokens safely", async ({ request }) => {
+  const missing = await request.get("/auth/callback", { maxRedirects: 0 });
+  expect(missing.status()).toBe(307);
+  expect(missing.headers().location).toContain("/streak/login?error=callback");
+  expect(missing.headers().location).toContain("next=%2Fmember");
+
+  const unsupported = await request.get("/auth/callback?token_hash=not-a-valid-token&type=google&next=https%3A%2F%2Fevil.example", { maxRedirects: 0 });
+  expect(unsupported.status()).toBe(307);
+  expect(unsupported.headers().location).toContain("error=verification");
+  expect(unsupported.headers().location).toContain("next=%2Fmember");
 });
 
 test("PWA manifest is served as valid JSON", async ({ request }) => {

@@ -31,6 +31,17 @@ export default async function PrayerStreakPage() {
   const supabase = await getServerSupabaseClient();
   const { data: campaign } = await supabase?.from("prayer_challenges").select("id,title,description,duration_days,minutes_per_day").eq("slug", "30-day-prayer-streak").eq("status", "published").maybeSingle() || { data: null };
   const { data: dayOne } = campaign ? await supabase!.from("prayer_challenge_days").select("title,bible_reference,encouragement,prayer_points").eq("challenge_id", campaign.id).eq("day_number", 1).maybeSingle() : { data: null };
+  const { data: { user } } = await supabase?.auth.getUser() ?? { data: { user: null } };
+  const { data: currentEnrollment } = user && campaign
+    ? await supabase!.from("prayer_enrollments").select("id").eq("member_id", user.id).eq("challenge_id", campaign.id).maybeSingle()
+    : { data: null };
+  const challengeDestination = campaign ? `/streak?challenge=${encodeURIComponent(campaign.id)}` : "/streak";
+  const challengeActionHref = currentEnrollment
+    ? "/streak"
+    : user
+      ? challengeDestination
+      : `/streak/register?next=${encodeURIComponent(challengeDestination)}`;
+  const challengeActionLabel = currentEnrollment ? "Open My Prayer Dashboard" : "Join the Prayer Challenge";
 
   return (
     <>
@@ -42,7 +53,7 @@ export default async function PrayerStreakPage() {
             <h1 className="mt-6 font-display text-[3.15rem] font-semibold leading-[.98] tracking-[-.045em] sm:text-7xl">A Deeper Prayer Life Begins With One Day.</h1>
             <p className="mt-6 max-w-xl text-base leading-8 text-white/75 sm:text-lg">Thirty days of intentional prayer, Scripture, reflection and spiritual growth. Build a steady practice one honest moment at a time.</p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Button href="/streak/register" size="lg" className="w-full bg-[#d6c38a] text-[#173326] shadow-none hover:bg-[#e2d5ac] sm:w-auto">Join the Prayer Challenge <ArrowRight className="h-4 w-4" /></Button>
+              <Button href={challengeActionHref} size="lg" className="w-full bg-[#d6c38a] text-[#173326] shadow-none hover:bg-[#e2d5ac] sm:w-auto">{challengeActionLabel} <ArrowRight className="h-4 w-4" /></Button>
               <Link href="/streak/login" className="rounded-full px-5 py-3 text-center text-sm font-semibold text-white/80 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d6c38a]">Returning member? Sign in</Link>
             </div>
             <a href="#how-it-works" className="mt-9 inline-flex items-center gap-2 text-xs font-medium tracking-wide text-white/55 hover:text-white/85">See how your journey works <ArrowDown className="h-3.5 w-3.5" /></a>
@@ -110,7 +121,7 @@ export default async function PrayerStreakPage() {
       </section>
 
       <section className="bg-[var(--evergreen)] py-16 text-white sm:py-20 lg:py-24">
-        <Container className="text-center"><p className="text-[10px] font-semibold uppercase tracking-[.28em] text-[#d6c38a]">Begin with today</p><h2 className="mx-auto mt-4 max-w-3xl font-display text-4xl font-semibold leading-tight tracking-[-.03em] sm:text-6xl">There is room to begin again.</h2><p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-white/70 sm:text-base">Take one step toward a more intentional rhythm of prayer. Begin at your own pace.</p><div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row"><Button href="/streak/register" size="lg" className="bg-[#d6c38a] text-[#173326] shadow-none hover:bg-[#e2d5ac]">Join the Prayer Challenge <ArrowRight className="h-4 w-4"/></Button><Link href="/streak/login" className="rounded-full px-5 py-3.5 text-sm font-semibold text-white/75 hover:bg-white/10 hover:text-white">Already a member? Sign in</Link></div></Container>
+        <Container className="text-center"><p className="text-[10px] font-semibold uppercase tracking-[.28em] text-[#d6c38a]">Begin with today</p><h2 className="mx-auto mt-4 max-w-3xl font-display text-4xl font-semibold leading-tight tracking-[-.03em] sm:text-6xl">There is room to begin again.</h2><p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-white/70 sm:text-base">Take one step toward a more intentional rhythm of prayer. Begin at your own pace.</p><div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row"><Button href={challengeActionHref} size="lg" className="bg-[#d6c38a] text-[#173326] shadow-none hover:bg-[#e2d5ac]">{challengeActionLabel} <ArrowRight className="h-4 w-4"/></Button><Link href="/streak/login?next=%2Fmember" className="rounded-full px-5 py-3.5 text-sm font-semibold text-white/75 hover:bg-white/10 hover:text-white">Already a member? Sign in</Link></div></Container>
       </section>
     </>
   );

@@ -3,7 +3,7 @@ import { MemberBar } from "@/components/streak/MemberBar";
 import { Container } from "@/components/Container";
 import { requireMember } from "@/lib/server/member";
 export default async function StreakHistoryPage() {
-  const { supabase, user } = await requireMember();
+  const { supabase, user } = await requireMember("/streak/history");
   const { data: enrollment } = await supabase.from("prayer_enrollments").select("id,prayer_challenges(title)").eq("member_id",user.id).order("enrolled_at",{ascending:false}).limit(1).maybeSingle();
   const { data: checkins } = enrollment ? await supabase.from("prayer_checkins").select("local_date,journey_day,completed_at").eq("enrollment_id",enrollment.id).order("local_date",{ascending:false}) : {data:[]};
   const { data: achievements } = enrollment ? await supabase.from("prayer_achievements").select("milestone,achieved_at").eq("enrollment_id",enrollment.id).order("milestone") : {data:[]};

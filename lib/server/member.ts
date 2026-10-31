@@ -3,11 +3,11 @@ import "server-only";
 import { redirect } from "next/navigation";
 import { getServerSupabaseClient } from "@/lib/supabase/server";
 
-export async function requireMember() {
+export async function requireMember(next = "/member") {
   const supabase = await getServerSupabaseClient();
-  if (!supabase) redirect("/streak/login");
+  if (!supabase) redirect(`/streak/login?next=${encodeURIComponent(next)}`);
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/streak/login?next=%2Fstreak");
+  if (!user) redirect(`/streak/login?next=${encodeURIComponent(next)}`);
   const { data: profile } = await supabase.from("member_profiles").select("*").eq("id", user.id).maybeSingle();
   return { supabase, user, profile };
 }
