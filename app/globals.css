@@ -1,8 +1,12 @@
 @import "tailwindcss";
 
 :root {
+  --font-manrope: "Segoe UI", Aptos, "Helvetica Neue", Arial, sans-serif;
+  --font-cormorant: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
   --honeydew: #ebfff3;
   --dark-moss-green: #486c26;
+  --evergreen: #183b2b;
+  --warm-ivory: #f7f5ee;
   --gold: #ffd600;
   --cultured: #f5f5f5;
   --white: #ffffff;
@@ -21,6 +25,8 @@
   --color-foreground: var(--foreground);
   --color-honeydew: var(--honeydew);
   --color-dark-moss-green: var(--dark-moss-green);
+  --color-evergreen: var(--evergreen);
+  --color-warm-ivory: var(--warm-ivory);
   --color-gold: var(--gold);
   --color-cultured: var(--cultured);
   --color-white: var(--white);

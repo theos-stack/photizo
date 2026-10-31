@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowDown } from "lucide-react";
+import Link from "next/link";
 
 import { Button } from "@/components/Button";
 import { Container } from "@/components/Container";
@@ -74,6 +75,10 @@ export function HomeHero() {
 
       <Container className="relative grid min-h-[calc(100vh-5rem)] gap-14 py-20 lg:grid-cols-[0.98fr_1.02fr] lg:items-center lg:py-28">
         <div className="max-w-3xl">
+          <Link href="/prayer-streak" className="mb-5 inline-flex min-h-9 items-center gap-2 rounded-full border border-[#d6c38a]/35 bg-[#d6c38a]/10 px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[.17em] text-[#ead9a4] transition hover:border-[#d6c38a]/60 hover:bg-[#d6c38a]/16 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#d6c38a] sm:text-[11px]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#d6c38a]" aria-hidden="true" />
+            30-Day Prayer Challenge
+          </Link>
           <motion.p
             initial={{ opacity: 1, y: 18 }}
             animate={{ opacity: 1, y: 0 }}

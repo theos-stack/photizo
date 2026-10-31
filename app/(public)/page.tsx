@@ -9,10 +9,13 @@ import { ProgramCard } from "@/components/ProgramCard";
 import { SectionHeading } from "@/components/SectionHeading";
 import { HomeHero } from "@/components/public/HomeHero";
 import { getPublishedPrograms } from "@/lib/data";
+import { getServerSupabaseClient } from "@/lib/supabase/server";
 
 export default async function HomePage() {
   await connection();
-  const programs = await getPublishedPrograms();
+  const [programs, supabase] = await Promise.all([getPublishedPrograms(), getServerSupabaseClient()]);
+  const { data: challenge } = await supabase?.from("prayer_challenges").select("id,title,duration_days,minutes_per_day").eq("slug", "30-day-prayer-streak").eq("status", "published").maybeSingle() || { data: null };
+  const { data: firstGuide } = challenge ? await supabase!.from("prayer_challenge_days").select("title,bible_reference,encouragement").eq("challenge_id", challenge.id).eq("day_number", 1).maybeSingle() : { data: null };
 
   return (
     <>
@@ -97,14 +100,40 @@ export default async function HomePage() {
         </Container>
       </section>
 
-      <section className="py-20">
-        <Container className="grid gap-8 rounded-[36px] border border-[rgba(72,108,38,0.14)] bg-[#fbfaf6] p-8 shadow-soft lg:grid-cols-[1fr_auto] lg:items-center lg:p-10">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.32em] text-[var(--dark-moss-green)]">A steady rhythm of prayer</p>
-            <h2 className="mt-4 max-w-3xl font-display text-4xl font-bold tracking-tight sm:text-5xl">30 Days. 10 Minutes. A Life of Prayer.</h2>
-            <p className="mt-4 max-w-2xl text-base leading-8 text-[var(--muted-foreground)]">Take ten focused minutes each day with an original prayer guide, a Scripture reference, and a gentle check-in. Begin at your own pace.</p>
+      <section id="prayer-challenge" className="py-14 sm:py-20 lg:py-24">
+        <Container>
+          <div className="relative isolate overflow-hidden rounded-[34px] bg-[var(--evergreen)] px-6 py-8 text-white shadow-[0_34px_90px_rgba(24,59,43,0.2)] sm:px-10 sm:py-12 lg:px-14 lg:py-14">
+            <div aria-hidden="true" className="pointer-events-none absolute -right-32 -top-40 -z-10 h-[420px] w-[420px] rounded-full border border-white/10 sm:h-[560px] sm:w-[560px]" />
+            <div aria-hidden="true" className="pointer-events-none absolute -right-10 -top-16 -z-10 h-[260px] w-[260px] rounded-full border border-white/[0.08] sm:h-[360px] sm:w-[360px]" />
+            <div className="grid gap-10 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:gap-14">
+              <div className="max-w-2xl">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#d6c38a]">PHOTIZO 30-Day Prayer Challenge</p>
+                <h2 className="mt-5 font-display text-[2.65rem] font-semibold leading-[1.04] tracking-[-0.04em] sm:text-6xl lg:text-[4.25rem]">A Deeper Prayer Life Begins With One Day.</h2>
+                <p className="mt-5 max-w-xl text-base leading-7 text-white/75 sm:text-lg sm:leading-8">Thirty days of intentional prayer, Scripture, reflection and spiritual growth. Join a community of believers developing consistency in prayer, one day at a time.</p>
+                <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <Button href="/prayer-streak" size="lg" className="w-full bg-[#d6c38a] text-[#173326] shadow-none hover:bg-[#e2d5ac] sm:w-auto">Join the Prayer Challenge</Button>
+                  <Button href="/prayer-streak#how-it-works" size="lg" variant="outline" className="w-full border-white/20 bg-white/[0.04] text-white hover:bg-white/10 sm:w-auto">Discover How It Works</Button>
+                </div>
+                <p className="mt-5 text-xs tracking-wide text-white/55">A personal practice, held with grace. No competition. No pressure to be perfect.</p>
+              </div>
+              <div className="relative mx-auto w-full max-w-[440px] lg:ml-auto">
+                <div className="absolute -inset-4 rounded-[32px] bg-[#d6c38a]/10 blur-2xl" />
+                <article className="relative rounded-[26px] border border-white/15 bg-[#fbfaf6] p-5 text-[#173326] shadow-[0_24px_65px_rgba(0,0,0,.22)] sm:p-7">
+                  <div className="flex items-center justify-between gap-3 border-b border-black/[0.08] pb-4">
+                    <div><p className="text-[10px] font-semibold uppercase tracking-[0.23em] text-[var(--dark-moss-green)]">Your daily space</p><p className="mt-1 text-xs text-black/50">One quiet moment at a time</p></div>
+                    <span className="rounded-full bg-[#e9eee6] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--evergreen)]">{challenge ? `${challenge.duration_days} days` : "A daily rhythm"}</span>
+                  </div>
+                  <div className="py-6">
+                    <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-black/45"><span className="h-px w-7 bg-[#c8ad6a]" />Daily Scripture</div>
+                    <h3 className="mt-3 font-display text-3xl font-semibold leading-tight">{firstGuide?.title || "Scripture, prayer and reflection"}</h3>
+                    {firstGuide?.bible_reference && <p className="mt-2 text-sm font-semibold text-[var(--dark-moss-green)]">{firstGuide.bible_reference}</p>}
+                    <p className="mt-3 line-clamp-3 text-sm leading-6 text-black/60">{firstGuide?.encouragement || "A gentle guide helps you make room for an intentional conversation with God."}</p>
+                  </div>
+                  <div className="flex items-center justify-between border-t border-black/[0.08] pt-4 text-xs text-black/50"><span>{challenge?.minutes_per_day || 10} focused minutes</span><span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-[var(--dark-moss-green)]" />Your pace, your journey</span></div>
+                </article>
+              </div>
+            </div>
           </div>
-          <Button href="/prayer-streak" size="lg">Join the Prayer Streak</Button>
         </Container>
       </section>
 
