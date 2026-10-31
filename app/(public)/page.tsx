@@ -14,7 +14,7 @@ import { getServerSupabaseClient } from "@/lib/supabase/server";
 export default async function HomePage() {
   await connection();
   const [programs, supabase] = await Promise.all([getPublishedPrograms(), getServerSupabaseClient()]);
-  const { data: challenge } = await supabase?.from("prayer_challenges").select("id,title,duration_days,minutes_per_day").eq("slug", "30-day-prayer-streak").eq("status", "published").maybeSingle() || { data: null };
+  const { data: challenge } = await supabase?.from("prayer_challenges").select("id,title,duration_days,minutes_per_day").eq("slug", "30-day-prayer-streak-2026").eq("status", "published").maybeSingle() || { data: null };
   const { data: firstGuide } = challenge ? await supabase!.from("prayer_challenge_days").select("title,bible_reference,encouragement").eq("challenge_id", challenge.id).eq("day_number", 1).maybeSingle() : { data: null };
 
   return (
@@ -111,7 +111,7 @@ export default async function HomePage() {
                 <h2 className="mt-5 font-display text-[2.65rem] font-semibold leading-[1.04] tracking-[-0.04em] sm:text-6xl lg:text-[4.25rem]">A Deeper Prayer Life Begins With One Day.</h2>
                 <p className="mt-5 max-w-xl text-base leading-7 text-white/75 sm:text-lg sm:leading-8">Thirty days of intentional prayer, Scripture, reflection and spiritual growth. Join a community of believers developing consistency in prayer, one day at a time.</p>
                 <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-                  <Button href="/prayer-streak" size="lg" className="w-full bg-[#d6c38a] text-[#173326] shadow-none hover:bg-[#e2d5ac] sm:w-auto">Join the Prayer Challenge</Button>
+                  <Button href="/streak" size="lg" className="w-full bg-[#d6c38a] text-[#173326] shadow-none hover:bg-[#e2d5ac] sm:w-auto">Join the Prayer Challenge</Button>
                   <Button href="/prayer-streak#how-it-works" size="lg" variant="outline" className="w-full border-white/20 bg-white/[0.04] text-white hover:bg-white/10 sm:w-auto">Discover How It Works</Button>
                 </div>
                 <p className="mt-5 text-xs tracking-wide text-white/55">A personal practice, held with grace. No competition. No pressure to be perfect.</p>

@@ -14,7 +14,7 @@ import { getBrowserSupabaseClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
 const ease = [0.16, 1, 0.3, 1] as const;
-const navItems = [...siteConfig.navItems, { href: "/prayer-streak", label: "Prayer Challenge" }];
+  const navItems = [...siteConfig.navItems, { href: "/streak", label: "Prayer Challenge" }];
 
 export function Header({ memberEmail }: { memberEmail: string | null }) {
   const pathname = usePathname();
@@ -38,7 +38,7 @@ export function Header({ memberEmail }: { memberEmail: string | null }) {
   ) : (
     <>
       <Link href="/streak/login" className="rounded-full px-3 py-2 text-sm font-semibold text-[var(--evergreen)] hover:bg-[var(--honeydew)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--evergreen)]">Sign in</Link>
-      <Button href="/prayer-streak" size="sm">Join Challenge</Button>
+      <Button href="/streak" size="sm">Join Challenge</Button>
       <Link href="/salvation" className="hidden rounded-full px-2 py-2 text-xs font-semibold text-black/55 hover:text-[var(--evergreen)] 2xl:inline">I Just Got Saved</Link>
     </>
   );
@@ -112,7 +112,7 @@ export function Header({ memberEmail }: { memberEmail: string | null }) {
               ) : (
                 <>
                   <Link href="/streak/login" onClick={() => setOpenForPath(null)} className="rounded-xl px-4 py-3 text-sm font-semibold text-[var(--evergreen)] hover:bg-[var(--honeydew)]">Sign in</Link>
-                  <Button href="/prayer-streak" className="w-full" onClick={() => setOpenForPath(null)}>Join Challenge</Button>
+                  <Button href="/streak" className="w-full" onClick={() => setOpenForPath(null)}>Join Challenge</Button>
                   <Link href="/salvation" onClick={() => setOpenForPath(null)} className="rounded-xl px-4 py-3 text-center text-sm text-black/55 hover:bg-black/[0.045]">I Just Got Saved</Link>
                 </>
               )}

@@ -50,12 +50,17 @@ test("prayer streak migration, RLS, lifecycle, correction audit, and concurrent 
     const bootstrap = await readFile(path.join(projectRoot, "tests/postgres/bootstrap.sql"), "utf8");
     const migration = await readFile(path.join(projectRoot, "supabase/migrations/202610290001_prayer_streak.sql"), "utf8");
     const rpcHardening = await readFile(path.join(projectRoot, "supabase/migrations/202610290002_harden_prayer_rpc_grants.sql"), "utf8");
+    const campaignSchedule = await readFile(path.join(projectRoot, "supabase/migrations/202610310001_campaign_schedule.sql"), "utf8");
     const grants = await readFile(path.join(projectRoot, "tests/postgres/grant-test-access.sql"), "utf8");
     const integration = await readFile(path.join(projectRoot, "tests/postgres/prayer-streak.integration.sql"), "utf8");
+    const campaignIntegration = await readFile(path.join(projectRoot, "tests/postgres/prayer-campaign.integration.sql"), "utf8");
     await database.exec(executableSql(bootstrap));
     await database.exec(migration);
     await database.exec(rpcHardening);
+    await database.exec(campaignSchedule);
     await database.exec(grants);
+    // Keep the existing lifecycle fixtures on the legacy per-enrollment clock.
+    await database.exec("update public.prayer_challenges set starts_at=null where slug='30-day-prayer-streak';");
     const rpcAccess = await database.query(`
       select
         has_function_privilege('anon', 'public.enroll_prayer_member(uuid)', 'execute') as anon_enroll,
@@ -74,6 +79,7 @@ test("prayer streak migration, RLS, lifecycle, correction audit, and concurrent 
       service_admin_correction: true,
     });
     await database.exec(executableSql(integration));
+    await database.exec(executableSql(campaignIntegration));
 
     if (!psql) {
       t.diagnostic("Database migration and RLS integration passed. Concurrent socket checks skipped because the psql client is unavailable.");

@@ -45,7 +45,7 @@ export default async function MemberHomePage() {
             <p className="mt-4 max-w-2xl text-sm leading-7 text-white/70">Your personal member space for ministry programmes and spiritual growth.</p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Button href="/programs" className="bg-[#d6c38a] text-[#173326] shadow-none hover:bg-[#e2d5ac]">Explore programmes</Button>
-              <Button href={hasPrayerJourney ? "/streak" : "/prayer-streak"} variant="ghost" className="border-white/25 text-white hover:bg-white/10">{hasPrayerJourney ? "Open my prayer dashboard" : "Explore the Prayer Challenge"}</Button>
+              <Button href={hasPrayerJourney ? "/streak/dashboard" : "/streak"} variant="ghost" className="border-white/25 text-white hover:bg-white/10">{hasPrayerJourney ? "Open my prayer dashboard" : "Explore the Prayer Challenge"}</Button>
             </div>
           </section>
 

@@ -1,94 +1,74 @@
 import { expect, test } from "@playwright/test";
 
-test("public pages and prayer challenge render without backend credentials", async ({ page }) => {
-  for (const route of ["/", "/about", "/teachings", "/programs", "/prayer-streak"]) {
-    const response = await page.goto(route);
-    expect(response?.status(), `${route} response`).toBe(200);
-    await expect(page.locator("main")).toBeVisible();
-  }
+test("public prayer landing page is accessible without authentication", async ({ page }) => {
+  const response = await page.goto("/streak");
+  expect(response?.status()).toBe(200);
+  await expect(page.getByRole("heading", { name: /30 Days\./i })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Create your PHOTIZO account/i })).toHaveAttribute("href", "/streak/register?next=%2Fmember");
+  await expect(page.getByRole("link", { name: /Already a member\? Sign in/i })).toHaveAttribute("href", "/streak/login?next=%2Fmember");
+  await expect(page.getByText(/Planned start:/i)).toBeVisible();
+  await expect(page.getByText(/campaign schedule and enrollment are being prepared/i)).toBeVisible();
 
   await page.goto("/prayer-streak");
-  await expect(page.getByRole("heading", { name: /A Deeper Prayer Life Begins With One Day/i })).toBeVisible();
-  await expect(page.getByRole("link", { name: /Join the Prayer Challenge/i }).first()).toHaveAttribute("href", /\/streak\/register\?next=/);
-  await expect(page.getByRole("heading", { name: "A simple rhythm. Your own pace." })).toBeVisible();
+  await expect(page).toHaveURL(/\/streak$/);
 });
 
-test("homepage promotes the public challenge and desktop navigation exposes it", async ({ page }) => {
+test("homepage links to the public challenge", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/");
   await expect(page.getByRole("heading", { name: /A Deeper Prayer Life Begins With One Day/i })).toBeVisible();
-  await expect(page.getByRole("link", { name: "30-Day Prayer Challenge" })).toHaveAttribute("href", "/prayer-streak");
-  await expect(page.getByRole("link", { name: "Prayer Challenge" }).first()).toBeVisible();
-  await expect(page.getByRole("link", { name: "Join the Prayer Challenge" }).first()).toHaveAttribute("href", "/prayer-streak");
-  await expect(page.getByRole("link", { name: "Join Challenge" }).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: /Join the Prayer Challenge/i }).first()).toHaveAttribute("href", "/streak");
+  await expect(page.getByRole("link", { name: "Prayer Challenge" }).first()).toHaveAttribute("href", "/streak");
 });
 
-test("mobile navigation opens with sign-in and challenge actions", async ({ page }) => {
+test("mobile navigation exposes the challenge", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
   await page.getByRole("button", { name: "Open navigation" }).click();
   const mobileNavigation = page.locator("#mobile-navigation");
-  await expect(mobileNavigation.getByRole("link", { name: "Prayer Challenge" })).toBeVisible();
+  await expect(mobileNavigation.getByRole("link", { name: "Prayer Challenge" })).toHaveAttribute("href", "/streak");
   await expect(mobileNavigation.getByRole("link", { name: "Sign in" })).toBeVisible();
-  await expect(mobileNavigation.getByRole("link", { name: "Join Challenge" })).toBeVisible();
 });
 
-test("desktop and mobile challenge and authentication layouts are captured for visual review", async ({ page }) => {
+test("challenge and unified auth screenshots are captured for visual review", async ({ page }) => {
   test.setTimeout(90_000);
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.goto("/");
-  await page.screenshot({ path: "test-results/photizo-home-desktop-viewport.png" });
-  await page.screenshot({ path: "test-results/photizo-home-desktop-1440.png", fullPage: true });
-  await page.goto("/prayer-streak");
-  await page.screenshot({ path: "test-results/photizo-challenge-desktop-viewport.png" });
-  await page.screenshot({ path: "test-results/photizo-challenge-desktop-1440.png", fullPage: true });
-  await page.goto("/streak/register");
-  await page.screenshot({ path: "test-results/photizo-register-desktop-viewport.png" });
-  await page.screenshot({ path: "test-results/photizo-register-desktop-1440.png", fullPage: true });
-  await page.goto("/streak/login");
-  await page.screenshot({ path: "test-results/photizo-login-desktop-1440.png" });
-  await page.goto("/streak/forgot-password");
-  await page.screenshot({ path: "test-results/photizo-forgot-password-desktop-1440.png" });
-
+  await page.goto("/streak");
+  await page.screenshot({ path: "test-results/photizo-challenge-desktop.png", fullPage: true });
+  await page.goto("/streak/login?next=%2Fstreak%2Fjoin");
+  await page.screenshot({ path: "test-results/photizo-auth-desktop.png", fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/");
-  await page.screenshot({ path: "test-results/photizo-home-mobile-viewport.png" });
-  await page.getByRole("button", { name: "Open navigation" }).click();
-  await page.screenshot({ path: "test-results/photizo-navigation-mobile-390.png" });
-  await page.getByRole("button", { name: "Close navigation" }).click();
-  await page.screenshot({ path: "test-results/photizo-home-mobile-390.png", fullPage: true });
-  await page.goto("/prayer-streak");
-  await page.screenshot({ path: "test-results/photizo-challenge-mobile-viewport.png" });
-  await page.screenshot({ path: "test-results/photizo-challenge-mobile-390.png", fullPage: true });
-  await page.goto("/streak/register");
-  await page.screenshot({ path: "test-results/photizo-register-mobile-viewport.png" });
-  await page.screenshot({ path: "test-results/photizo-register-mobile-390.png", fullPage: true });
-  await page.goto("/streak/login");
-  await page.screenshot({ path: "test-results/photizo-login-mobile-390.png" });
-  await page.goto("/streak/forgot-password");
-  await page.screenshot({ path: "test-results/photizo-forgot-password-mobile-390.png" });
+  await page.goto("/streak");
+  await page.screenshot({ path: "test-results/photizo-challenge-mobile.png", fullPage: true });
+  await page.goto("/streak/login?next=%2Fstreak%2Fjoin");
+  await page.screenshot({ path: "test-results/photizo-auth-mobile.png", fullPage: true });
 });
 
-test("member auth forms render and report missing configuration without exposing a session", async ({ page }) => {
-  await page.goto("/streak/login?next=%2Fstreak%2Fsettings");
-  await expect(page.getByRole("heading", { name: "Welcome back to PHOTIZO" })).toBeVisible();
-  await expect(page.getByLabel("Email address")).toBeVisible();
+test("unified email authentication and password recovery render safely", async ({ page }) => {
+  await page.goto("/streak/login?next=%2Fstreak%2Fjoin");
+  await expect(page.getByRole("heading", { name: "Sign in to PHOTIZO" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Continue with Email" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Continue with Google" })).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Show password" })).toBeVisible();
+  await page.getByRole("button", { name: "Continue with Email" }).click();
+  await expect(page.getByLabel("Email address")).toBeVisible();
+  await expect(page.getByRole("textbox", { name: /Password/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Forgot password?" })).toBeVisible();
 
-  await page.goto("/streak/register");
-  await expect(page.getByRole("heading", { name: "Create your PHOTIZO account" })).toBeVisible();
+  await page.goto("/streak/register?next=%2Fstreak%2Fjoin");
+  await expect(page.getByRole("heading", { name: "Sign in to PHOTIZO" })).toBeVisible();
   await expect(page.getByLabel("Display name")).toBeVisible();
+  await expect(page.getByLabel("Email address")).toBeVisible();
 
   await page.goto("/streak/forgot-password");
   await expect(page.getByRole("heading", { name: "Reset your password" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Send reset link" })).toBeVisible();
 });
 
-test("protected member dashboard redirects unauthenticated visitors to member login", async ({ page }) => {
+test("protected member routes redirect while public challenge stays open", async ({ page }) => {
   await page.goto("/streak");
-  await expect(page).toHaveURL(/\/streak\/login(?:\?|$)/);
-  await expect(page.getByRole("heading", { name: "Welcome back to PHOTIZO" })).toBeVisible();
+  await expect(page).toHaveURL(/\/streak$/);
+  await page.goto("/streak/dashboard");
+  await expect(page).toHaveURL(/\/streak\/login\?next=/);
   await page.goto("/member");
   await expect(page).toHaveURL(/\/streak\/login\?next=%2Fmember/);
 });

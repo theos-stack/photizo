@@ -10,6 +10,16 @@ export async function POST(request: Request) {
   try { raw = await request.json(); } catch { return NextResponse.json({ error: "Invalid request body." }, { status: 400 }); }
   const parsed = z.object({ challenge_id: z.string().uuid() }).safeParse(raw);
   if (!parsed.success) return NextResponse.json({ error: "Choose a valid challenge." }, { status: 400 });
+  const { data: challenge, error: challengeError } = await supabase.from("prayer_challenges")
+    .select("id,slug,starts_at")
+    .eq("id", parsed.data.challenge_id)
+    .eq("slug", "30-day-prayer-streak-2026")
+    .eq("status", "published")
+    .maybeSingle();
+  const { data: serverNow, error: clockError } = await supabase.rpc("prayer_campaign_server_now");
+  if (challengeError || !challenge?.starts_at || clockError || typeof serverNow !== "string") {
+    return NextResponse.json({ error: "Enrollment is unavailable until the production campaign schedule is installed and verified." }, { status: 503 });
+  }
   const { data, error } = await supabase.rpc("enroll_prayer_member", { p_challenge_id: parsed.data.challenge_id });
   if (error) return NextResponse.json({ error: "This challenge is not available to join right now." }, { status: 400 });
   return NextResponse.json({ success: true, enrollment: data });
