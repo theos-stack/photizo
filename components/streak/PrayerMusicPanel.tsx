@@ -3,6 +3,7 @@
 import { ExternalLink, Pause, Play, Square } from "lucide-react";
 import { useRef, useState } from "react";
 import { getPrayerMusicEmbed, type PrayerMusicProvider } from "@/lib/prayer-music";
+import { hasReachedPrayerMusicLimit, MAX_PRAYER_MUSIC_SECONDS, prayerMusicSeekLimit } from "@/lib/prayer-music-playback";
 
 export type PrayerMusicItem = { id: string; title: string; description: string; provider: PrayerMusicProvider; provider_url: string; sort_order: number };
 
@@ -33,7 +34,7 @@ function LicensedAudioPlayer({ item }: { item: PrayerMusicItem }) {
   const [volume, setVolume] = useState(0.8);
   const [limitEnabled, setLimitEnabled] = useState(true);
   const [error, setError] = useState("");
-  const ceiling = limitEnabled ? Math.min(duration || 600, 600) : duration || 600;
+  const ceiling = prayerMusicSeekLimit(duration, limitEnabled);
 
   async function play() {
     const audio = audioRef.current;
@@ -50,9 +51,9 @@ function LicensedAudioPlayer({ item }: { item: PrayerMusicItem }) {
   }
 
   function updateTime(audio: HTMLAudioElement) {
-    const capped = limitEnabled && audio.currentTime >= 600;
-    if (capped) { audio.currentTime = 600; audio.pause(); setPlaying(false); setError("Your optional 10-minute music session is complete."); }
-    setCurrentTime(Math.min(audio.currentTime, limitEnabled ? 600 : Number.MAX_SAFE_INTEGER));
+    const capped = hasReachedPrayerMusicLimit(audio.currentTime, limitEnabled);
+    if (capped) { audio.currentTime = MAX_PRAYER_MUSIC_SECONDS; audio.pause(); setPlaying(false); setError("Your optional 10-minute music session is complete."); }
+    setCurrentTime(Math.min(audio.currentTime, ceiling));
   }
 
   return <div className="rounded-xl border border-[#dfd4b8] bg-white p-4">

@@ -22,6 +22,8 @@ self.addEventListener("fetch", (event) => {
 self.addEventListener("push", (event) => {
   let data = { title: "A moment for prayer", body: "Your PHOTIZO prayer guide is ready.", url: "/streak" };
   try { if (event.data) data = { ...data, ...event.data.json() }; } catch {}
-  event.waitUntil(self.registration.showNotification(data.title, { body: data.body, icon: "/icons/icon-192.png", badge: "/icons/icon-192.png", data: { url: data.url || "/streak" } }));
+  let target = "/streak/dashboard";
+  try { const url = new URL(typeof data.url === "string" ? data.url : target, self.location.origin); if (url.origin === self.location.origin && url.pathname.startsWith("/streak")) target = `${url.pathname}${url.search}${url.hash}`; } catch {}
+  event.waitUntil(self.registration.showNotification(data.title, { body: data.body, icon: "/icons/icon-192.png", badge: "/icons/icon-192.png", data: { url: target }, actions: [{ action: "open-streak", title: "Open My Prayer Streak" }] }));
 });
-self.addEventListener("notificationclick", (event) => { event.notification.close(); const target=event.notification.data?.url || "/streak"; event.waitUntil(clients.matchAll({type:"window",includeUncontrolled:true}).then((list)=>{const existing=list.find((client)=>new URL(client.url).origin===self.location.origin);return existing?existing.navigate(target):clients.openWindow(target);})); });
+self.addEventListener("notificationclick", (event) => { event.notification.close(); const raw=event.notification.data?.url; let target="/streak/dashboard"; try { const url=new URL(typeof raw==="string"?raw:"/streak/dashboard",self.location.origin); if(url.origin===self.location.origin&&url.pathname.startsWith("/streak"))target=`${url.pathname}${url.search}${url.hash}`; } catch {} event.waitUntil(clients.matchAll({type:"window",includeUncontrolled:true}).then((list)=>{const existing=list.find((client)=>new URL(client.url).origin===self.location.origin);return existing?existing.navigate(target):clients.openWindow(target);})); });

@@ -13,6 +13,11 @@ export async function PUT(request: Request) {
   const parsed = schema.safeParse(raw);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || "Invalid settings." }, { status: 400 });
   try { new Intl.DateTimeFormat("en", { timeZone: parsed.data.timezone }); } catch { return NextResponse.json({ error: "Choose a valid IANA time zone." }, { status: 400 }); }
+  if (parsed.data.push_enabled) {
+    const { count, error: subscriptionError } = await supabase.from("prayer_push_subscriptions").select("id", { count: "exact", head: true }).eq("member_id", user.id);
+    if (subscriptionError) return NextResponse.json({ error: "Could not verify this device's push subscription." }, { status: 500 });
+    if (!count) return NextResponse.json({ error: "Enable push on this device before saving push reminders." }, { status: 400 });
+  }
   const { display_name, timezone, ministry_announcements, ...prefs } = parsed.data;
   const [profile, preferences, consent] = await Promise.all([
     supabase.from("member_profiles").update({ display_name, timezone, notifications_enabled: prefs.push_enabled || prefs.email_enabled, updated_at: new Date().toISOString() }).eq("id", user.id),

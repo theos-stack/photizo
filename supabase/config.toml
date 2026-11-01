@@ -1,0 +1,2 @@
+[functions.prayer-reminders]
+verify_jwt = false

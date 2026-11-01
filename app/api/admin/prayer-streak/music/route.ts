@@ -78,6 +78,29 @@ export async function PATCH(request: Request) {
   return NextResponse.json({ success: true });
 }
 
+export async function DELETE(request: Request) {
+  const auth = await verifyAdminRequest();
+  if (!auth.ok || !auth.user?.email) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  let raw: unknown;
+  try { raw = await request.json(); } catch { return NextResponse.json({ error: "Invalid request body." }, { status: 400 }); }
+  const parsed = z.object({ id: z.string().uuid() }).safeParse(raw);
+  if (!parsed.success) return NextResponse.json({ error: "Choose a valid music selection." }, { status: 400 });
+  const db = getServiceSupabaseClient();
+  if (!db) return NextResponse.json({ error: "Server database credentials are not configured." }, { status: 503 });
+  const { data: current, error: readError } = await db.from("prayer_music_items").select("id,provider,provider_url").eq("id", parsed.data.id).maybeSingle();
+  if (readError || !current) return NextResponse.json({ error: "Music selection not found." }, { status: 404 });
+  const { error } = await db.from("prayer_music_items").delete().eq("id", current.id);
+  if (error) return musicWriteError(error.code);
+  if (current.provider === "audio" && current.provider_url.includes(`/api/prayer-music/${current.id}?ext=`)) {
+    const extension = current.provider_url.split("?ext=")[1]?.split(/[&#]/)[0] || "";
+    if (/^(mp3|m4a|aac|ogg|wav|webm)$/.test(extension)) {
+      const { error: storageError } = await db.storage.from("prayer-music-library").remove([`${current.id}/audio.${extension}`]);
+      if (storageError) return NextResponse.json({ success: true, warning: "The selection was removed, but its private audio file could not be cleaned up. Contact an administrator to remove the orphaned file." });
+    }
+  }
+  return NextResponse.json({ success: true });
+}
+
 function musicWriteError(code?: string) {
   if (code === "23514") return NextResponse.json({ error: "This database has not been enabled for PHOTIZO-licensed audio yet. Existing Spotify and YouTube selections are unaffected." }, { status: 409 });
   return NextResponse.json({ error: "Could not save this music selection." }, { status: 500 });
