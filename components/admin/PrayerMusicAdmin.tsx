@@ -41,10 +41,25 @@ export function PrayerMusicAdmin({ initial }: { initial: Item[] }) {
   function move(index: number, direction: -1 | 1) {
     const target = index + direction;
     if (target < 0 || target >= items.length || busy) return;
-    const reordered = [...items]; [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
+    const previous = items;
+    const reordered = [...previous]; [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
     const normalized = reordered.map((item, sort_order) => ({ ...item, sort_order }));
     setItems(normalized);
-    void Promise.all([update(normalized[index].id, { sort_order: index }), update(normalized[target].id, { sort_order: target })]);
+    setBusy(true); setMessage("");
+    void (async () => {
+      try {
+        for (const item of [normalized[index], normalized[target]]) {
+          const response = await fetch("/api/admin/prayer-streak/music", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: item.id, sort_order: item.sort_order }) });
+          if (!response.ok) throw new Error("Could not save the new music order.");
+        }
+      } catch (cause) {
+        for (const item of [previous[index], previous[target]]) {
+          await fetch("/api/admin/prayer-streak/music", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: item.id, sort_order: item.sort_order }) }).catch(() => undefined);
+        }
+        setItems(previous);
+        setMessage(cause instanceof Error ? cause.message : "Could not save the new music order.");
+      } finally { setBusy(false); }
+    })();
   }
 
   return <section className="rounded-3xl border border-black/10 bg-white p-6 shadow-soft">

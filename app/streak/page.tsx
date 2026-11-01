@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ArrowRight, BookOpen, Check, Clock3 } from "lucide-react";
 import { Container } from "@/components/Container";
 import { PRAYER_CAMPAIGN_DEFAULT } from "@/lib/prayer-campaign";
@@ -16,6 +17,10 @@ export default async function PublicPrayerStreakPage() {
   const accountHref = "/streak/register?next=%2Fstreak%2Fjoin";
   const loginHref = "/streak/login?next=%2Fstreak%2Fjoin";
   const supabase = await getServerSupabaseClient();
+  if (supabase) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) redirect("/streak/dashboard");
+  }
   const [campaignResult, clockResult] = supabase
     ? await Promise.all([
       supabase.from("prayer_challenges").select("starts_at,campaign_timezone,duration_days,status").eq("slug", "30-day-prayer-streak-2026").maybeSingle(),

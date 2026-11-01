@@ -54,11 +54,13 @@ export default async function StreakDashboardPage() {
   }
 
   const challenge = activeCampaign || campaign;
-  const [daysResult, checkinsResult, achievementsResult] = await Promise.all([
+  const [daysResult, checkinsResult, achievementsResult, musicResult] = await Promise.all([
     supabase.from("prayer_challenge_days").select("day_number,title,bible_reference,encouragement,prayer_points,completion_message").eq("challenge_id", campaign.id).order("day_number"),
     enrollment ? supabase.from("prayer_checkins").select("local_date,journey_day").eq("enrollment_id", enrollment.id).order("local_date") : Promise.resolve({ data: [], error: null }),
     enrollment ? supabase.from("prayer_achievements").select("milestone").eq("enrollment_id", enrollment.id).order("milestone") : Promise.resolve({ data: [], error: null }),
+    supabase.from("prayer_music_items").select("id,title,description,provider,provider_url,sort_order").eq("is_published", true).order("sort_order").order("created_at"),
   ]);
   const today = getTimeZoneDate(now, timeZone);
-  return <><MemberBar email={user.email || "Member"}/><main className="py-6 sm:py-10"><Container><PrayerStreakDashboard profile={profile} challenge={challenge} enrollment={enrollment ? { ...enrollment, prayer_challenges: challenge } : null} days={daysResult.data || []} checkins={checkinsResult.data || []} achievements={achievementsResult.data || []} today={today} campaignDay={campaignDay}/></Container></main></>;
+  const musicItems = (musicResult.error ? [] : musicResult.data || []) as { id: string; title: string; description: string; provider: "spotify" | "youtube"; provider_url: string; sort_order: number }[];
+  return <><MemberBar email={user.email || "Member"}/><main className="py-6 sm:py-10"><Container><PrayerStreakDashboard profile={profile} challenge={challenge} enrollment={enrollment ? { ...enrollment, prayer_challenges: challenge } : null} days={daysResult.data || []} checkins={checkinsResult.data || []} achievements={achievementsResult.data || []} musicItems={musicItems} today={today} campaignDay={campaignDay}/></Container></main></>;
 }
