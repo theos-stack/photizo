@@ -17,6 +17,7 @@ export const metadata: Metadata = {
   description:
     "PHOTIZO Network International is committed to evangelizing men, raising disciples, and establishing the truth of God's kingdom in hearts across the world.",
   applicationName: "PHOTIZO Network International",
+  appleWebApp: { title: "PHOTIZO Prayer Streak" },
   openGraph: {
     type: "website",
     locale: "en_US",

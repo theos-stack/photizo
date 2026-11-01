@@ -49,6 +49,7 @@ export function MemberBar({ email }: { email: string }) {
       <Link href="/member" onClick={closeMenu} className="font-semibold text-[var(--dark-moss-green)]">PHOTIZO · Member Space</Link>
       <nav aria-label="Member navigation" className="hidden items-center gap-3 text-sm sm:gap-5 md:flex">
         {links.map((link) => <Link key={link.href} href={link.href} className="font-medium">{link.label}</Link>)}
+        <a href="https://photizonetwork.com" target="_blank" rel="noopener noreferrer" className="font-medium text-black/55 transition hover:text-[var(--evergreen)]">Explore PHOTIZO Network</a>
         <span className="hidden text-black/55 md:inline">{email}</span>
         <button type="button" onClick={signOut} className="font-semibold text-[var(--dark-moss-green)]">Sign out</button>
       </nav>
@@ -59,6 +60,7 @@ export function MemberBar({ email }: { email: string }) {
       <nav id="member-mobile-menu" aria-label="Mobile member navigation" aria-hidden={!menuOpen} inert={!menuOpen} className="min-h-0 overflow-hidden">
         <div className="space-y-1 border-t border-black/10 pb-2 pt-3">
           {links.map((link) => <Link key={link.href} href={link.href} onClick={closeMenu} className={`block min-h-11 ${linkClass(link.href)}`} aria-current={active(link.href) ? "page" : undefined}>{link.label}</Link>)}
+          <a href="https://photizonetwork.com" target="_blank" rel="noopener noreferrer" className="flex min-h-11 items-center rounded-lg px-2 py-2 text-sm font-medium text-black/55 transition hover:bg-black/5 hover:text-[var(--evergreen)]">Explore PHOTIZO Network</a>
           <p className="truncate px-2 pt-2 text-xs text-black/45">{email}</p>
           <button type="button" onClick={() => { closeMenu(); void signOut(); }} className="min-h-11 w-full rounded-lg px-2 text-left text-sm font-semibold text-[var(--dark-moss-green)] transition hover:bg-black/5">Sign Out</button>
         </div>

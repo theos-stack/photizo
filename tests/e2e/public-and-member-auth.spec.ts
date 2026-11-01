@@ -70,7 +70,7 @@ test("protected member routes redirect while public challenge stays open", async
   await page.goto("/streak");
   await expect(page).toHaveURL(/\/streak$/);
   await page.goto("/streak/dashboard");
-  await expect(page).toHaveURL(/\/streak\/login\?next=/);
+  await expect(page).toHaveURL(/\/streak\/login\?next=%2Fstreak%2Fdashboard/);
   await page.goto("/member");
   await expect(page).toHaveURL(/\/streak\/login\?next=%2Fmember/);
 });
@@ -91,6 +91,14 @@ test("PWA manifest is served as valid JSON", async ({ request }) => {
   const response = await request.get("/manifest.webmanifest");
   expect(response.status()).toBe(200);
   const manifest = await response.json();
-  expect(manifest.name).toContain("PHOTIZO");
-  expect(manifest.start_url).toBe("/");
+  expect(manifest.name).toBe("PHOTIZO Prayer Streak");
+  expect(manifest.short_name).toBe("Prayer Streak");
+  expect(manifest.id).toBe("/");
+  expect(manifest.start_url).toBe("/streak/dashboard");
+  expect(manifest.scope).toBe("/");
+  expect(manifest.display).toBe("standalone");
+  expect(manifest.icons).toEqual(expect.arrayContaining([
+    expect.objectContaining({ src: "/icons/icon-192.png" }),
+    expect.objectContaining({ src: "/icons/icon-maskable-512.png", purpose: "maskable" }),
+  ]));
 });
