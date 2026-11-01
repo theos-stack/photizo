@@ -5,8 +5,9 @@ import { consecutiveStreakAt, prayerAchievementMessage, PRAYER_ACHIEVEMENT_MESSA
 test("each of the thirty days has a unique encouragement", () => {
   assert.equal(PRAYER_ACHIEVEMENT_MESSAGES.length, 30);
   assert.equal(new Set(PRAYER_ACHIEVEMENT_MESSAGES).size, 30);
-  assert.equal(prayerAchievementMessage(1), PRAYER_ACHIEVEMENT_MESSAGES[0]);
-  assert.equal(prayerAchievementMessage(30), PRAYER_ACHIEVEMENT_MESSAGES[29]);
+  assert.equal(prayerAchievementMessage(1), "A journey of transformation begins here.");
+  assert.equal(prayerAchievementMessage(15), "Halfway through. Keep pressing on.");
+  assert.equal(prayerAchievementMessage(30), "Thirty days complete. Let the journey continue.");
 });
 
 test("historic achievement streak is derived from consecutive saved local dates", () => {
@@ -17,8 +18,10 @@ test("historic achievement streak is derived from consecutive saved local dates"
 });
 
 test("new achievement requires a successful backend result and ignores duplicate check-ins", () => {
-  assert.deepEqual(verifiedPrayerAchievement({ journey_day: 7, current_streak: 4, already_checked_in: false }), { day: 7, streak: 4 });
+  assert.deepEqual(verifiedPrayerAchievement({ journey_day: 7, total_completed: 5, current_streak: 4, already_checked_in: false }), { day: 7, completedDays: 5, streak: 4 });
   assert.equal(verifiedPrayerAchievement(null), null);
-  assert.equal(verifiedPrayerAchievement({ journey_day: 7, current_streak: 4, already_checked_in: true }), null);
-  assert.equal(verifiedPrayerAchievement({ journey_day: 31, current_streak: 4 }), null);
+  assert.equal(verifiedPrayerAchievement({ journey_day: 7, total_completed: 5, current_streak: 4, already_checked_in: true }), null);
+  assert.equal(verifiedPrayerAchievement({ journey_day: 31, total_completed: 31, current_streak: 4 }), null);
+  assert.deepEqual(verifiedPrayerAchievement({ journey_day: 8, total_completed: 3, current_streak: 3 }), { day: 8, completedDays: 3, streak: 3 });
+  assert.equal(verifiedPrayerAchievement({ journey_day: 7, total_completed: 4, current_streak: 5 }), null);
 });

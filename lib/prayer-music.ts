@@ -1,6 +1,19 @@
-export type PrayerMusicProvider = "spotify" | "youtube";
+export type PrayerMusicProvider = "spotify" | "youtube" | "audio";
+
+const licensedAudioExtensions = new Set(["mp3", "m4a", "aac", "ogg", "oga", "wav", "webm"]);
+
+export function isSupportedLicensedAudioUrl(rawUrl: string) {
+  try {
+    const url = new URL(rawUrl);
+    const extension = url.pathname.split(".").pop()?.toLowerCase();
+    return url.protocol === "https:" && !url.username && !url.password && Boolean(extension && licensedAudioExtensions.has(extension));
+  } catch {
+    return false;
+  }
+}
 
 export function getPrayerMusicEmbed(provider: PrayerMusicProvider, rawUrl: string): string | null {
+  if (provider === "audio") return null;
   let url: URL;
   try { url = new URL(rawUrl); } catch { return null; }
   if (url.protocol !== "https:") return null;

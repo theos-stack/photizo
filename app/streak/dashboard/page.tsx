@@ -61,6 +61,6 @@ export default async function StreakDashboardPage() {
     supabase.from("prayer_music_items").select("id,title,description,provider,provider_url,sort_order").eq("is_published", true).order("sort_order").order("created_at"),
   ]);
   const today = getTimeZoneDate(now, timeZone);
-  const musicItems = (musicResult.error ? [] : musicResult.data || []) as { id: string; title: string; description: string; provider: "spotify" | "youtube"; provider_url: string; sort_order: number }[];
+  const musicItems = (musicResult.error ? [] : musicResult.data || []) as { id: string; title: string; description: string; provider: "spotify" | "youtube" | "audio"; provider_url: string; sort_order: number }[];
   return <><MemberBar email={user.email || "Member"}/><main className="py-6 sm:py-10"><Container><PrayerStreakDashboard profile={profile} challenge={challenge} enrollment={enrollment ? { ...enrollment, prayer_challenges: challenge } : null} days={daysResult.data || []} checkins={checkinsResult.data || []} achievements={achievementsResult.data || []} musicItems={musicItems} today={today} campaignDay={campaignDay}/></Container></main></>;
 }
