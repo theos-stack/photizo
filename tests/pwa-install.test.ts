@@ -37,6 +37,12 @@ test("install invitation waits until no other active experience is visible", () 
   assert.equal(shouldShowInstallPrompt({ ...eligible, platform: "unsupported" }), false);
 });
 
+test("a member's manual install request is never silently blocked by session timing", () => {
+  assert.equal(shouldShowInstallPrompt({ ...eligible, eligiblePath: false, dismissedThisSession: true, alreadyShownThisSession: true, invitationActive: true, prayerActive: true, celebrationActive: true, manual: true }), true);
+  assert.equal(shouldShowInstallPrompt({ ...eligible, manual: true, installed: true }), false);
+  assert.equal(shouldShowInstallPrompt({ ...eligible, manual: true, platform: "unsupported" }), false);
+});
+
 test("install platform detection covers iOS, Android, desktop and installed mode", () => {
   assert.equal(getInstallPlatform("Mozilla iPhone"), "ios");
   assert.equal(getInstallPlatform("Mozilla Android"), "android");

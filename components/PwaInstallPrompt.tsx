@@ -24,18 +24,15 @@ export function PwaInstallPrompt() {
   const initializedRef = useRef(false);
   useEffect(() => { showRef.current = show; }, [show]);
 
-  const shouldShowNow = useCallback((manual = false) => {
+  const shouldShowNow = useCallback((manual: "request" | "existing" | false = false) => {
     const standalone = isStandalone();
     const detected = getInstallPlatform(navigator.userAgent, standalone);
     setPlatform(detected);
     if (standalone) return false;
     const activePrayer = hasActivePrayerSession(window.localStorage);
     const celebrating = window.sessionStorage.getItem(CELEBRATION_KEY) === "1";
-    if (activePrayer || celebrating) return false;
     const activeInvitation = getActiveInvitation(window.sessionStorage);
-    if (activeInvitation && activeInvitation !== "install") return false;
-    if (manual) return detected !== "unsupported";
-    return shouldShowInstallPrompt({
+    const installState = {
       eligiblePath: isPrayerStreakPath(pathname),
       platform: detected,
       installed: false,
@@ -44,7 +41,10 @@ export function PwaInstallPrompt() {
       invitationActive: activeInvitation !== null,
       prayerActive: activePrayer,
       celebrationActive: celebrating,
-    });
+    };
+    if (manual === "request") return shouldShowInstallPrompt({ ...installState, manual: true });
+    if (manual === "existing") return detected !== "unsupported" && !activePrayer && !celebrating && (!activeInvitation || activeInvitation === "install");
+    return shouldShowInstallPrompt(installState);
   }, [pathname]);
 
   const release = useCallback(() => {
@@ -57,7 +57,7 @@ export function PwaInstallPrompt() {
     }
   }, []);
 
-  const open = useCallback((manual = false) => {
+  const open = useCallback((manual: "request" | "existing" | false = false) => {
     if (!shouldShowNow(manual)) return;
     if (scheduleRef.current) window.clearTimeout(scheduleRef.current);
     scheduleRef.current = window.setTimeout(() => {
@@ -89,10 +89,10 @@ export function PwaInstallPrompt() {
       setInstructionsOpen(false);
       release();
     };
-    const manualOpen = () => open(true);
+    const manualOpen = () => open("request");
     const refresh = () => {
       if (isStandalone()) { installed(); return; }
-      if (showRef.current && !shouldShowNow(true)) release();
+      if (showRef.current && !shouldShowNow("existing")) release();
       else if (!showRef.current) open();
     };
     window.addEventListener("beforeinstallprompt", handler);

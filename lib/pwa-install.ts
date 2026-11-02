@@ -23,6 +23,7 @@ export function shouldShowInstallPrompt({
   invitationActive,
   prayerActive,
   celebrationActive,
+  manual = false,
 }: {
   eligiblePath: boolean;
   platform: InstallPlatform;
@@ -32,7 +33,9 @@ export function shouldShowInstallPrompt({
   invitationActive: boolean;
   prayerActive: boolean;
   celebrationActive: boolean;
+  manual?: boolean;
 }) {
+  if (manual) return platform !== "unsupported" && !installed;
   return eligiblePath && platform !== "unsupported" && !installed && !dismissedThisSession
     && !alreadyShownThisSession && !invitationActive && !prayerActive && !celebrationActive;
 }
