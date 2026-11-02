@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, Check, Clock3, Heart } from "lucide-react";
 import { Button } from "@/components/Button";
 import { countdownParts } from "@/lib/prayer-campaign";
+import { PrayerCommunityInvite } from "@/components/streak/PrayerCommunityInvite";
 
 function timeLabel(startsAt: string, timeZone: string) {
   const date = new Date(startsAt);
@@ -19,6 +20,7 @@ export function CampaignPrelaunchDashboard({
   serverNow,
   timeZone,
   challengeId,
+  memberId,
   isEnrolled,
   scheduleConfirmed = true,
 }: {
@@ -26,6 +28,7 @@ export function CampaignPrelaunchDashboard({
   serverNow: string | null;
   timeZone: string;
   challengeId: string;
+  memberId: string;
   isEnrolled: boolean;
   scheduleConfirmed?: boolean;
 }) {
@@ -95,6 +98,8 @@ export function CampaignPrelaunchDashboard({
           <Link href="/member" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/20 px-6 text-sm font-semibold text-white/80 transition hover:bg-white/10"><Heart className="h-4 w-4"/>PHOTIZO Member Home</Link>
         </div>
         {message && <p role="status" className="mx-auto mt-3 max-w-xl text-sm text-[#f6edcf]">{message}</p>}
+
+        {isEnrolled && <PrayerCommunityInvite memberId={memberId} eligible />}
 
         <div className="mx-auto mt-8 max-w-xl border-t border-white/10 pt-5">
           <p className="font-display text-lg font-semibold text-[#f6edcf] sm:text-xl">30 days. One commitment. A deeper life of prayer.</p>

@@ -1,13 +1,40 @@
-export const INSTALL_PROMPT_SNOOZE_MS = 7 * 24 * 60 * 60 * 1000;
 const PRAYER_TIMER_PREFIX = "photizo:prayer-timer:";
 
-export function shouldShowInstallPrompt({ engaged, installed, dismissedAt, now = Date.now() }: {
-  engaged: boolean;
+export type InstallPlatform = "ios" | "android" | "desktop" | "unsupported";
+
+export function getInstallPlatform(userAgent: string, standalone = false): InstallPlatform {
+  if (standalone) return "unsupported";
+  if (/iphone|ipad|ipod/i.test(userAgent)) return "ios";
+  if (/android/i.test(userAgent)) return "android";
+  if (/chrome|chromium|edg\//i.test(userAgent)) return "desktop";
+  return "unsupported";
+}
+
+export function isPrayerStreakPath(pathname: string) {
+  return pathname === "/streak" || pathname.startsWith("/streak/");
+}
+
+export function shouldShowInstallPrompt({
+  eligiblePath,
+  platform,
+  installed,
+  dismissedThisSession,
+  alreadyShownThisSession,
+  invitationActive,
+  prayerActive,
+  celebrationActive,
+}: {
+  eligiblePath: boolean;
+  platform: InstallPlatform;
   installed: boolean;
-  dismissedAt: number;
-  now?: number;
+  dismissedThisSession: boolean;
+  alreadyShownThisSession: boolean;
+  invitationActive: boolean;
+  prayerActive: boolean;
+  celebrationActive: boolean;
 }) {
-  return engaged && !installed && (!dismissedAt || now - dismissedAt >= INSTALL_PROMPT_SNOOZE_MS);
+  return eligiblePath && platform !== "unsupported" && !installed && !dismissedThisSession
+    && !alreadyShownThisSession && !invitationActive && !prayerActive && !celebrationActive;
 }
 
 export function hasActivePrayerSession(storage: Pick<Storage, "length" | "key" | "getItem">, now = Date.now()) {
@@ -18,7 +45,7 @@ export function hasActivePrayerSession(storage: Pick<Storage, "length" | "key" |
       const timer = JSON.parse(storage.getItem(key) || "null") as { status?: unknown; endsAt?: unknown } | null;
       if (timer?.status === "running" && typeof timer.endsAt === "number" && timer.endsAt > now) return true;
     } catch {
-      // Ignore malformed local timer data; it cannot prove an active session.
+      // Malformed local timer data cannot prove that prayer is active.
     }
   }
   return false;

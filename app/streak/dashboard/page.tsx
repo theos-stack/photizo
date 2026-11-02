@@ -34,7 +34,7 @@ export default async function StreakDashboardPage() {
     const { data: enrollment } = legacyCampaign
       ? await supabase.from("prayer_enrollments").select("id").eq("member_id", user.id).eq("challenge_id", legacyCampaign.id).maybeSingle()
       : { data: null };
-    return <><MemberBar email={user.email || "Member"}/><CampaignPrelaunchDashboard startsAt={null} serverNow={null} timeZone="Africa/Lagos" challengeId={legacyCampaign?.id || ""} isEnrolled={Boolean(enrollment)} scheduleConfirmed={false}/></>;
+    return <><MemberBar email={user.email || "Member"}/><CampaignPrelaunchDashboard startsAt={null} serverNow={null} timeZone="Africa/Lagos" challengeId={legacyCampaign?.id || ""} memberId={user.id} isEnrolled={Boolean(enrollment)} scheduleConfirmed={false}/></>;
   }
 
   const timeZone = campaign.campaign_timezone || "Africa/Lagos";
@@ -50,7 +50,7 @@ export default async function StreakDashboardPage() {
   const activeCampaign = selectedCampaign as unknown as Campaign | null;
 
   if (now < startsAt) {
-    return <><MemberBar email={user.email || "Member"}/><CampaignPrelaunchDashboard startsAt={campaign.starts_at} serverNow={serverNow} timeZone={timeZone} challengeId={campaign.id} isEnrolled={Boolean(enrollment)}/></>;
+    return <><MemberBar email={user.email || "Member"}/><CampaignPrelaunchDashboard startsAt={campaign.starts_at} serverNow={serverNow} timeZone={timeZone} challengeId={campaign.id} memberId={user.id} isEnrolled={Boolean(enrollment)}/></>;
   }
 
   const challenge = activeCampaign || campaign;
@@ -62,5 +62,5 @@ export default async function StreakDashboardPage() {
   ]);
   const today = getTimeZoneDate(now, timeZone);
   const musicItems = (musicResult.error ? [] : musicResult.data || []) as { id: string; title: string; description: string; provider: "spotify" | "youtube" | "audio"; provider_url: string; sort_order: number }[];
-  return <><MemberBar email={user.email || "Member"}/><main className="py-6 sm:py-10"><Container><PrayerStreakDashboard profile={profile} challenge={challenge} enrollment={enrollment ? { ...enrollment, prayer_challenges: challenge } : null} days={daysResult.data || []} checkins={checkinsResult.data || []} achievements={achievementsResult.data || []} musicItems={musicItems} today={today} campaignDay={campaignDay}/></Container></main></>;
+  return <><MemberBar email={user.email || "Member"}/><main className="py-6 sm:py-10"><Container><PrayerStreakDashboard memberId={user.id} profile={profile} challenge={challenge} enrollment={enrollment ? { ...enrollment, prayer_challenges: challenge } : null} days={daysResult.data || []} checkins={checkinsResult.data || []} achievements={achievementsResult.data || []} musicItems={musicItems} today={today} campaignDay={campaignDay}/></Container></main></>;
 }

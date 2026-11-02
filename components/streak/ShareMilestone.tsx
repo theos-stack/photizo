@@ -18,6 +18,18 @@ export function ShareMilestone({ day, streak, completedDays, displayName, initia
   const encouragement = prayerAchievementMessage(day);
 
   useEffect(() => {
+    if (open) window.sessionStorage.setItem("photizo:achievement:open", "1");
+    else window.sessionStorage.removeItem("photizo:achievement:open");
+    window.dispatchEvent(new CustomEvent("photizo:achievement-visibility", { detail: { open } }));
+    return () => {
+      if (open) {
+        window.sessionStorage.removeItem("photizo:achievement:open");
+        window.dispatchEvent(new CustomEvent("photizo:achievement-visibility", { detail: { open: false } }));
+      }
+    };
+  }, [open]);
+
+  useEffect(() => {
     if (!open) return;
     let current = true;
     let url = "";
