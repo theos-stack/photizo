@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isProgramScheduleValid } from "@/lib/program-schedule";
 
 const optionalString = z
   .string()
@@ -176,6 +177,8 @@ export const programSchema = z.object({
   flyer_url: optionalString,
   date: z.string().trim().optional().or(z.literal("")),
   time: optionalString,
+  end_date: z.string().trim().optional().or(z.literal("")),
+  end_time: optionalString,
   location: optionalString,
   online_link: z
     .string()
@@ -187,6 +190,14 @@ export const programSchema = z.object({
   registration_form: z.array(programCustomFieldSchema).default([]),
   status: z.enum(["draft", "published", "closed", "completed"]),
 }).superRefine((value, context) => {
+  if ((value.end_date || value.end_time) && !isProgramScheduleValid(value)) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Add a valid start date and both end date and end time. The end must be after the start.",
+      path: [value.end_date ? "end_time" : "end_date"],
+    });
+  }
+
   const seenKeys = new Set<string>();
 
   value.registration_form.forEach((field, index) => {

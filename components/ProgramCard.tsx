@@ -9,7 +9,7 @@ import {
   isProgramRegistrationOpen,
 } from "@/lib/utils";
 
-export function ProgramCard({ program }: { program: Program }) {
+export function ProgramCard({ program, showStatus = true }: { program: Program; showStatus?: boolean }) {
   const registrationOpen = isProgramRegistrationOpen(program);
 
   return (
@@ -45,12 +45,15 @@ export function ProgramCard({ program }: { program: Program }) {
               {program.description}
             </p>
           </div>
-          <StatusBadge status={program.status} />
+          {showStatus && <StatusBadge status={program.status} />}
         </div>
         <div className="grid gap-3 text-sm text-[rgba(11,11,11,0.72)]">
           <div className="flex items-center gap-3">
             <CalendarDays className="h-4 w-4 text-[var(--dark-moss-green)]" />
-            {formatDateTime(program.date, program.time)}
+            <span>
+              {formatDateTime(program.date, program.time)}
+              {program.end_date && program.end_time ? <span className="block text-xs text-black/50">Until {formatDateTime(program.end_date, program.end_time)}</span> : null}
+            </span>
           </div>
           <div className="flex items-center gap-3">
             <MapPin className="h-4 w-4 text-[var(--dark-moss-green)]" />

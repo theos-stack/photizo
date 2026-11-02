@@ -72,6 +72,8 @@ export type Program = {
   flyer_url: string | null;
   date: string | null;
   time: string | null;
+  end_date?: string | null;
+  end_time?: string | null;
   location: string | null;
   online_link: string | null;
   registration_deadline: string | null;

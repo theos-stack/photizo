@@ -1,17 +1,15 @@
-import Link from "next/link";
-
 import { Button } from "@/components/Button";
 import { Container } from "@/components/Container";
-import { EmptyState } from "@/components/EmptyState";
 import { MemberBar } from "@/components/streak/MemberBar";
 import { ProgramCard } from "@/components/ProgramCard";
 import { requireMember } from "@/lib/server/member";
 import { getPublishedPrograms } from "@/lib/data";
 import { getServiceSupabaseClient } from "@/lib/supabase/server";
+import { getAvailablePrograms } from "@/lib/program-schedule";
 
 export default async function MemberHomePage() {
   const { supabase, user, profile } = await requireMember("/member");
-  const [{ data: enrollments }, programs] = await Promise.all([
+  const [{ data: enrollments }, publishedPrograms] = await Promise.all([
     supabase
       .from("prayer_enrollments")
       .select("id,challenge_id,status,enrolled_at")
@@ -20,6 +18,7 @@ export default async function MemberHomePage() {
       .limit(20),
     getPublishedPrograms(),
   ]);
+  const programs = getAvailablePrograms(publishedPrograms, new Date());
 
   const service = getServiceSupabaseClient();
   const { data: registrations } = service && user.email
@@ -44,25 +43,42 @@ export default async function MemberHomePage() {
             <h1 className="mt-3 font-display text-4xl font-semibold tracking-[-.03em] sm:text-5xl">Welcome, {displayName}.</h1>
             <p className="mt-4 max-w-2xl text-sm leading-7 text-white/70">Your personal member space for ministry programmes and spiritual growth.</p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Button href="/programs" className="bg-[#d6c38a] text-[#173326] shadow-none hover:bg-[#e2d5ac]">Explore programmes</Button>
-              <Button href={hasPrayerJourney ? "/streak/dashboard" : "/streak"} variant="ghost" className="border-white/25 text-white hover:bg-white/10">{hasPrayerJourney ? "Open my prayer dashboard" : "Explore the Prayer Challenge"}</Button>
+              <Button href="/programs" className="bg-[#d6c38a] text-[#173326] shadow-none hover:bg-[#e2d5ac] active:translate-y-0 active:bg-[#c8b374] focus-visible:ring-[#e3cf91] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--evergreen)]">Explore programmes</Button>
+              <Button
+                href={hasPrayerJourney ? "/streak/dashboard" : "/streak"}
+                variant="ghost"
+                className="border-white/35 bg-transparent text-white hover:border-white/55 hover:bg-white/15 hover:text-white active:translate-y-0 active:bg-white/20 focus-visible:ring-[#e3cf91] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--evergreen)]"
+              >
+                {hasPrayerJourney ? "Open my prayer dashboard" : "Explore the Prayer Challenge"}
+              </Button>
             </div>
           </section>
 
-          <section className="mt-10">
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[.24em] text-[var(--dark-moss-green)]">Take part</p>
-                <h2 className="mt-2 font-display text-3xl font-semibold text-[#182a1e]">Available programmes</h2>
+          {programs.length ? (
+            <section className="mt-10">
+              <div className="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-[.24em] text-[var(--dark-moss-green)]">Take part</p>
+                  <h2 className="mt-2 font-display text-3xl font-semibold text-[#182a1e]">Available programmes</h2>
+                </div>
               </div>
-              <Link href="/programs" className="text-sm font-semibold text-[var(--dark-moss-green)] hover:underline">View all programmes</Link>
-            </div>
-            {programs.length ? (
-              <div className="mt-5 grid gap-5 lg:grid-cols-2">{programs.map((program) => <ProgramCard key={program.id} program={program} />)}</div>
-            ) : (
-              <div className="mt-5"><EmptyState title="No programmes are open right now." description="Visit the programmes page for the latest ministry gatherings and announcements." /></div>
-            )}
-          </section>
+              <div className="mt-5 grid gap-5 lg:grid-cols-2">{programs.map((program) => <ProgramCard key={program.id} program={program} showStatus={false} />)}</div>
+            </section>
+          ) : (
+            <section className="mt-10 overflow-hidden rounded-[30px] border border-[#d6c38a]/30 bg-[linear-gradient(135deg,#f9f7ef_0%,#fff_55%,#edf2ec_100%)] p-6 shadow-soft sm:p-9">
+              <p className="text-[10px] font-semibold uppercase tracking-[.25em] text-[var(--dark-moss-green)]">Discover PHOTIZO</p>
+              <div className="mt-4 grid gap-7 lg:grid-cols-[1fr_auto] lg:items-end">
+                <div className="max-w-3xl">
+                  <h2 className="font-display text-3xl font-semibold leading-tight tracking-[-.025em] text-[#182a1e] sm:text-4xl">A Community Rooted in Faith. Growing Together in Purpose.</h2>
+                  <p className="mt-4 max-w-2xl text-sm leading-7 text-black/65">PHOTIZO Network International is a space for believers to connect, learn, pray and grow together. While we prepare for our next gathering, your journey of faith continues.</p>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <Button href={hasPrayerJourney ? "/streak/dashboard" : "/streak"} variant="secondary" className="focus-visible:ring-offset-2">Continue Prayer Streak</Button>
+                  <Button href="/" variant="ghost" className="border-black/15 bg-white text-[#173326] hover:bg-[#f1f2ec] hover:text-[#173326] active:translate-y-0 focus-visible:ring-offset-2">Explore PHOTIZO</Button>
+                </div>
+              </div>
+            </section>
+          )}
 
           <section className="mt-10 rounded-[26px] border border-black/[.07] bg-white p-6 shadow-soft sm:p-8">
             <p className="text-[10px] font-semibold uppercase tracking-[.24em] text-[var(--dark-moss-green)]">Your activity</p>

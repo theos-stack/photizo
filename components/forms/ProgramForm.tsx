@@ -45,6 +45,8 @@ function buildDefaultValues(program?: Program | null): FormValues {
     flyer_url: program?.flyer_url ?? "",
     date: program?.date ?? "",
     time: program?.time ?? "",
+    end_date: program?.end_date ?? "",
+    end_time: program?.end_time ?? "",
     location: program?.location ?? "",
     online_link: program?.online_link ?? "",
     registration_deadline: program?.registration_deadline ?? "",
@@ -79,6 +81,10 @@ export function ProgramForm({ program }: { program?: Program | null }) {
   const watchedTime = useWatch({
     control: form.control,
     name: "time",
+  });
+  const watchedEndTime = useWatch({
+    control: form.control,
+    name: "end_time",
   });
 
   const customFieldCountLabel = useMemo(() => {
@@ -209,6 +215,19 @@ export function ProgramForm({ program }: { program?: Program | null }) {
         }
         error={form.formState.errors.time?.message}
         helperText="Select a suggested time or type one in 12-hour format, for example 5:00 PM."
+      />
+      <FormInput
+        label="End date (optional)"
+        type="date"
+        error={form.formState.errors.end_date?.message}
+        {...form.register("end_date")}
+      />
+      <TimePickerField
+        label="End time (optional)"
+        value={watchedEndTime}
+        onChange={(value) => form.setValue("end_time", value, { shouldDirty: true, shouldValidate: true })}
+        error={form.formState.errors.end_time?.message}
+        helperText="Set both end date and time to keep an event visible while it is in progress."
       />
       <FormInput
         label="Registration deadline"
