@@ -31,8 +31,11 @@ export const PRAYER_ACHIEVEMENT_MESSAGES = [
   "Thirty days complete. Let the journey continue.",
 ] as const;
 
-export function prayerAchievementMessage(day: number) {
+export const ACHIEVEMENT_VESSEL_PATH = "M80 18h60v50c0 13 19 19 31 31 20 18 29 54 29 101 0 37-4 65-13 82-7 13-19 20-34 20H67c-15 0-27-7-34-20-9-17-13-45-13-82 0-47 9-83 29-101 12-12 31-18 31-31V18Z";
+
+export function prayerAchievementMessage(day: number, completedDays?: number) {
   if (!Number.isInteger(day) || day < 1 || day > PRAYER_ACHIEVEMENT_MESSAGES.length) return "Your faithful return is worth celebrating.";
+  if (day === 30 && completedDays !== undefined && completedDays !== 30) return "You showed up for Day 30. Keep the journey going.";
   return PRAYER_ACHIEVEMENT_MESSAGES[day - 1];
 }
 
@@ -83,7 +86,7 @@ export async function renderPrayerAchievementPng({ name, day, streak, completedD
   const context = canvas.getContext("2d");
   if (!context) throw new Error("This browser cannot create the achievement image.");
 
-  const safeName = name.trim().slice(0, 100) || "Prayer Partner";
+  const safeName = (name || "").trim().slice(0, 100) || "Prayer Partner";
   drawBackground(context, width, height, format);
   if (format === "portrait") drawPortrait(context, safeName, day, streak, completedDays);
   else drawSquare(context, safeName, day, streak, completedDays);
@@ -92,206 +95,207 @@ export async function renderPrayerAchievementPng({ name, day, streak, completedD
 }
 
 function drawBackground(context: CanvasRenderingContext2D, width: number, height: number, format: AchievementFormat) {
-  const background = context.createLinearGradient(0, 0, width, height);
-  background.addColorStop(0, "#0e251b");
-  background.addColorStop(0.52, "#173c2a");
-  background.addColorStop(1, "#0a1e16");
-  context.fillStyle = background;
+  context.fillStyle = "#fcf8f1";
   context.fillRect(0, 0, width, height);
 
-  const glow = context.createRadialGradient(format === "portrait" ? 540 : 790, format === "portrait" ? 1050 : 520, 20, format === "portrait" ? 540 : 790, format === "portrait" ? 1050 : 520, format === "portrait" ? 660 : 420);
-  glow.addColorStop(0, "rgba(220,190,117,0.15)");
-  glow.addColorStop(1, "rgba(220,190,117,0)");
+  const glowX = format === "portrait" ? width / 2 : width * 0.72;
+  const glowY = format === "portrait" ? height * 0.49 : height * 0.45;
+  const glow = context.createRadialGradient(glowX, glowY, 8, glowX, glowY, format === "portrait" ? 650 : 430);
+  glow.addColorStop(0, "rgba(243,230,222,0.48)");
+  glow.addColorStop(0.58, "rgba(250,234,217,0.17)");
+  glow.addColorStop(1, "rgba(250,234,217,0)");
   context.fillStyle = glow;
   context.fillRect(0, 0, width, height);
 
-  context.strokeStyle = "rgba(223,207,156,0.38)";
-  context.lineWidth = 2;
-  context.strokeRect(38, 38, width - 76, height - 76);
-  context.strokeStyle = "rgba(223,207,156,0.16)";
-  context.lineWidth = 1;
-  context.strokeRect(51, 51, width - 102, height - 102);
-  drawCorner(context, 70, 70, 1, 1);
-  drawCorner(context, width - 70, 70, -1, 1);
-  drawCorner(context, 70, height - 70, 1, -1);
-  drawCorner(context, width - 70, height - 70, -1, -1);
-}
-
-function drawCorner(context: CanvasRenderingContext2D, x: number, y: number, sx: number, sy: number) {
-  context.save();
-  context.translate(x, y);
-  context.scale(sx, sy);
-  context.strokeStyle = "rgba(223,207,156,0.72)";
-  context.lineWidth = 3;
+  context.fillStyle = "rgba(199,161,108,0.08)";
   context.beginPath();
-  context.moveTo(0, 25); context.lineTo(0, 0); context.lineTo(25, 0);
-  context.stroke();
-  context.restore();
+  context.arc(format === "portrait" ? width - 52 : width - 16, 118, format === "portrait" ? 140 : 100, 0, Math.PI * 2);
+  context.fill();
 }
 
 function drawPortrait(context: CanvasRenderingContext2D, name: string, day: number, streak: number, completedDays: number) {
-  const left = 100;
-  drawBrand(context, left, 150, 880);
-  drawRule(context, left, 185, 880);
-  drawText(context, `DAY ${pad2(day)} / 30`, left, 260, "600 26px Arial, sans-serif", "#e2ce91");
-  drawText(context, "PRAYER STREAK", left, 362, "600 78px Georgia, 'Times New Roman', serif", "#fbf7e9");
-  drawText(context, "COMPLETED", left + 4, 425, "600 27px Arial, sans-serif", "#d5c28a");
-  drawTrackedText(context, "A PERSONAL MOMENT OF COMMITMENT", left, 485, "600 16px Arial, sans-serif", "rgba(245,239,218,0.72)", 3);
+  const left = 96;
+  drawBrand(context, left, 118, 888);
+  drawCapsule(context, "30-DAY PRAYER JOURNEY", left, 222, "#f3e6de", "#745c4d");
+  drawCapsule(context, `DAY ${pad2(day)} / 30`, 786, 222, "#f2e5ce", "#76572e", 198);
+  drawText(context, "PRAYER STREAK", left, 356, "600 86px Georgia, 'Times New Roman', serif", "#30251f");
+  drawText(context, `DAY ${pad2(day)} COMPLETE`, left + 3, 408, "600 24px Arial, sans-serif", "#a87535");
+  const milestone = milestoneLabel(day, completedDays);
+  if (milestone) drawText(context, milestone.toUpperCase(), left + 3, 455, "600 13px Arial, sans-serif", "#745c4d");
 
-  drawText(context, "CELEBRATING", left, 566, "600 15px Arial, sans-serif", "#d5c28a");
-  const nameLines = wrapText(context, name, 870, "500 45px Georgia, 'Times New Roman', serif");
-  let nameY = 620;
-  for (const line of nameLines.slice(0, 2)) {
-    drawText(context, line, left, nameY, "500 45px Georgia, 'Times New Roman', serif", "#fbf7e9");
-    nameY += 54;
-  }
+  drawText(context, "CELEBRATING", left, 527, "600 14px Arial, sans-serif", "#745c4d");
+  const nameLayout = drawName(context, name, left, 586, 888, 48, 31, 3, "#30251f");
+  const messageY = Math.max(704, nameLayout.bottom + 39);
+  const messageLines = drawWrappedText(context, prayerAchievementMessage(day, completedDays), left, messageY, 888, "400 31px Georgia, 'Times New Roman', serif", "#745c4d", 3, 41);
 
-  const message = prayerAchievementMessage(day);
-  drawWrappedText(context, message, left, Math.max(705, nameY + 30), 850, "400 31px Georgia, 'Times New Roman', serif", "#e3d6b0", 2, 42);
-
-  drawVessel(context, 540, 805, 0.78, completedDays);
-  const progressY = 1328;
-  drawText(context, `${completedDays} OF 30 DAYS COMPLETED`, 540, progressY, "600 21px Arial, sans-serif", "#f1e6c8", "center");
-  drawRule(context, 335, progressY + 25, 410);
-  drawText(context, `CONSECUTIVE STREAK · ${streak} ${streak === 1 ? "DAY" : "DAYS"}`, 540, progressY + 66, "500 17px Arial, sans-serif", "rgba(245,239,218,0.78)", "center");
-  if (completedDays === 30) drawText(context, "THIRTY DAYS COMPLETE · KEEP THE RHYTHM", 540, progressY + 111, "600 15px Arial, sans-serif", "#e2ce91", "center");
-  drawFooter(context, 540, 1710, 880);
+  const vesselTop = Math.max(842, messageY + messageLines * 41 + 34);
+  drawVessel(context, 540, vesselTop, 1.36, completedDays);
+  const progressY = Math.max(1325, vesselTop + 420);
+  drawText(context, `${completedDays} OF 30 DAYS COMPLETED`, 540, progressY, "600 21px Arial, sans-serif", "#30251f", "center");
+  drawText(context, `CONSECUTIVE STREAK · ${streak} ${streak === 1 ? "DAY" : "DAYS"}`, 540, progressY + 38, "500 16px Arial, sans-serif", "#745c4d", "center");
+  if (completedDays === 30) drawText(context, "THIRTY DAYS COMPLETED · KEEP THE RHYTHM", 540, progressY + 72, "600 13px Arial, sans-serif", "#a87535", "center");
+  drawFooter(context, 540, 1694, 888);
 }
 
 function drawSquare(context: CanvasRenderingContext2D, name: string, day: number, streak: number, completedDays: number) {
-  const left = 88;
-  drawBrand(context, left, 108, 904);
-  drawRule(context, left, 145, 904);
-  drawText(context, `DAY ${pad2(day)} / 30`, left, 222, "600 22px Arial, sans-serif", "#e2ce91");
-  drawText(context, "PRAYER", left, 320, "600 70px Georgia, 'Times New Roman', serif", "#fbf7e9");
-  drawText(context, "STREAK", left, 397, "600 70px Georgia, 'Times New Roman', serif", "#fbf7e9");
-  drawText(context, "COMPLETED", left + 3, 440, "600 20px Arial, sans-serif", "#d5c28a");
-  drawText(context, "CELEBRATING", left, 520, "600 14px Arial, sans-serif", "#d5c28a");
-  const nameLines = wrapText(context, name, 400, "500 35px Georgia, 'Times New Roman', serif");
-  let nameY = 566;
-  for (const line of nameLines.slice(0, 3)) {
-    drawText(context, line, left, nameY, "500 35px Georgia, 'Times New Roman', serif", "#fbf7e9");
-    nameY += 43;
-  }
-  drawWrappedText(context, prayerAchievementMessage(day), left, nameY + 30, 410, "400 23px Georgia, 'Times New Roman', serif", "#e3d6b0", 3, 31);
+  const left = 76;
+  drawBrand(context, left, 74, 928);
+  drawCapsule(context, `DAY ${pad2(day)} / 30`, left, 162, "#f2e5ce", "#76572e", 172);
+  drawText(context, "PRAYER STREAK", left, 265, "600 62px Georgia, 'Times New Roman', serif", "#30251f");
+  drawText(context, `DAY ${pad2(day)} COMPLETE`, left + 2, 306, "600 18px Arial, sans-serif", "#a87535");
+  const milestone = milestoneLabel(day, completedDays);
+  if (milestone) drawText(context, milestone.toUpperCase(), left + 2, 342, "600 11px Arial, sans-serif", "#745c4d");
 
-  drawVessel(context, 780, 216, 0.61, completedDays);
-  drawText(context, `${completedDays} / 30 DAYS`, 780, 746, "600 18px Arial, sans-serif", "#f1e6c8", "center");
-  drawText(context, `${streak} ${streak === 1 ? "DAY" : "DAYS"} CONSECUTIVE`, 780, 776, "500 13px Arial, sans-serif", "rgba(245,239,218,0.76)", "center");
-  if (completedDays === 30) drawText(context, "FULL VESSEL · JOURNEY COMPLETE", 780, 806, "600 12px Arial, sans-serif", "#e2ce91", "center");
-  drawRule(context, 88, 875, 904);
-  drawText(context, "JOIN THE 30-DAY PRAYER STREAK", 88, 926, "600 17px Arial, sans-serif", "#e2ce91");
-  drawText(context, "photizonetwork.com/streak", 88, 966, "400 21px Georgia, 'Times New Roman', serif", "#fbf7e9");
-  drawText(context, "PHOTIZO NETWORK INTERNATIONAL", 992, 966, "500 11px Arial, sans-serif", "rgba(245,239,218,0.6)", "right");
+  drawText(context, "CELEBRATING", left, 424, "600 12px Arial, sans-serif", "#745c4d");
+  const nameLayout = drawName(context, name, left, 472, 465, 39, 26, 3, "#30251f");
+  const messageY = Math.max(600, nameLayout.bottom + 34);
+  const messageLines = drawWrappedText(context, prayerAchievementMessage(day, completedDays), left, messageY, 455, "400 23px Georgia, 'Times New Roman', serif", "#745c4d", 3, 31);
+
+  drawVessel(context, 790, 181, 1.11, completedDays);
+  drawText(context, `${completedDays} OF 30 DAYS`, 790, 584, "600 17px Arial, sans-serif", "#30251f", "center");
+  drawText(context, `${streak} ${streak === 1 ? "DAY" : "DAYS"} CONSECUTIVE`, 790, 613, "500 12px Arial, sans-serif", "#745c4d", "center");
+  if (completedDays === 30) drawText(context, "FULL JOURNEY", 790, 640, "600 11px Arial, sans-serif", "#a87535", "center");
+
+  drawRule(context, left, 864 + Math.min(42, messageLines * 10), 928);
+  drawText(context, "JOIN THE 30-DAY PRAYER STREAK", left, 922 + Math.min(42, messageLines * 10), "600 15px Arial, sans-serif", "#745c4d");
+  drawText(context, "photizonetwork.com/streak", left, 963 + Math.min(42, messageLines * 10), "400 23px Georgia, 'Times New Roman', serif", "#30251f");
+  drawText(context, "ONE DAY AT A TIME · A MORE INTENTIONAL LIFE OF PRAYER", 1004, 963 + Math.min(42, messageLines * 10), "500 10px Arial, sans-serif", "#745c4d", "right");
 }
 
 function drawVessel(context: CanvasRenderingContext2D, centerX: number, top: number, scale: number, completedDays: number) {
   const ratio = completedDays / 30;
-  const width = 440;
-  const left = centerX - width * scale / 2;
+  const left = centerX - 110 * scale;
+  const fillBottom = 302;
+  const fillHeight = 284;
+  const fillY = fillBottom - fillHeight * ratio;
+  const path = new Path2D(ACHIEVEMENT_VESSEL_PATH);
+
   context.save();
   context.translate(left, top);
   context.scale(scale, scale);
 
   context.save();
-  context.shadowColor = ratio === 1 ? "rgba(248,220,150,0.5)" : "rgba(223,207,156,0.2)";
-  context.shadowBlur = ratio === 1 ? 45 : 24;
-  context.beginPath();
-  vesselPath(context);
-  context.clip();
-
-  const interiorBottom = 534;
-  const interiorHeight = 440;
-  const fillY = interiorBottom - interiorHeight * ratio;
-  const liquid = context.createLinearGradient(0, fillY, 0, interiorBottom);
-  liquid.addColorStop(0, "rgba(238,211,143,0.95)");
-  liquid.addColorStop(0.08, "rgba(207,173,99,0.88)");
-  liquid.addColorStop(1, "rgba(149,115,54,0.80)");
-  context.fillStyle = liquid;
-  context.fillRect(28, fillY, 384, interiorBottom - fillY + 40);
-  context.fillStyle = "rgba(255,247,221,0.27)";
-  context.fillRect(35, fillY, 370, 5);
-  const pool = context.createRadialGradient(220, interiorBottom - 12, 2, 220, interiorBottom - 12, 165);
-  pool.addColorStop(0, "rgba(255,239,190,0.45)");
-  pool.addColorStop(1, "rgba(255,239,190,0)");
-  context.fillStyle = pool;
-  context.fillRect(50, interiorBottom - 75, 340, 80);
+  context.shadowColor = ratio === 1 ? "rgba(168,117,53,0.22)" : "rgba(116,92,77,0.12)";
+  context.shadowBlur = ratio === 1 ? 20 : 12;
+  context.fillStyle = "rgba(255,253,249,0.8)";
+  context.fill(path);
   context.restore();
 
-  const glass = context.createLinearGradient(55, 0, 380, 0);
-  glass.addColorStop(0, "rgba(239,244,223,0.03)");
-  glass.addColorStop(0.18, "rgba(242,238,216,0.13)");
-  glass.addColorStop(0.48, "rgba(255,255,255,0.025)");
-  glass.addColorStop(0.78, "rgba(236,232,205,0.11)");
-  glass.addColorStop(1, "rgba(255,255,255,0.035)");
-  context.fillStyle = glass;
-  context.beginPath(); vesselPath(context); context.fill();
-
-  const outline = context.createLinearGradient(40, 20, 390, 540);
-  outline.addColorStop(0, "rgba(255,250,224,0.92)");
-  outline.addColorStop(0.48, "rgba(223,207,156,0.88)");
-  outline.addColorStop(1, "rgba(255,250,224,0.65)");
-  context.strokeStyle = outline;
-  context.lineWidth = 5;
-  context.beginPath(); vesselPath(context); context.stroke();
-
-  context.strokeStyle = "rgba(255,252,232,0.72)";
-  context.lineWidth = 3;
-  context.beginPath(); context.moveTo(176, 24); context.lineTo(264, 24); context.moveTo(178, 43); context.lineTo(262, 43); context.stroke();
-  context.strokeStyle = "rgba(255,248,220,0.45)";
-  context.lineWidth = 7;
-  context.beginPath(); context.moveTo(99, 182); context.bezierCurveTo(78, 230, 79, 327, 92, 404); context.stroke();
-  context.strokeStyle = "rgba(255,248,220,0.30)";
-  context.lineWidth = 4;
-  context.beginPath(); context.moveTo(336, 192); context.bezierCurveTo(357, 249, 357, 335, 346, 398); context.stroke();
-  context.strokeStyle = "rgba(242,223,174,0.6)";
-  context.lineWidth = 3;
-  context.beginPath(); context.moveTo(95, 506); context.quadraticCurveTo(220, 535, 345, 506); context.stroke();
-  if (ratio === 1) {
-    context.strokeStyle = "rgba(255,242,201,0.85)";
-    context.lineWidth = 4;
-    context.beginPath(); context.moveTo(108, fillY); context.quadraticCurveTo(220, fillY - 8, 332, fillY); context.stroke();
+  context.save();
+  context.clip(path);
+  context.fillStyle = "rgba(255,253,249,0.45)";
+  context.fillRect(20, 12, 180, 274);
+  const liquid = context.createLinearGradient(0, fillY, 0, fillBottom);
+  liquid.addColorStop(0, "#dfc18e");
+  liquid.addColorStop(0.2, "#c7a16c");
+  liquid.addColorStop(1, "#b4874f");
+  context.fillStyle = liquid;
+  context.fillRect(20, fillY, 180, fillBottom - fillY + 8);
+  if (completedDays > 0) {
+    context.strokeStyle = "rgba(255,253,249,0.76)";
+    context.lineWidth = 1.5;
+    context.beginPath();
+    context.moveTo(35, fillY);
+    context.quadraticCurveTo(110, fillY - 3, 185, fillY);
+    context.stroke();
   }
+
+  const reflection = context.createLinearGradient(34, 0, 75, 0);
+  reflection.addColorStop(0, "rgba(255,255,255,0.58)");
+  reflection.addColorStop(1, "rgba(255,255,255,0)");
+  context.fillStyle = reflection;
+  context.beginPath();
+  context.moveTo(39, 125);
+  context.bezierCurveTo(28, 164, 30, 226, 41, 254);
+  context.lineTo(51, 250);
+  context.bezierCurveTo(42, 213, 43, 165, 54, 133);
+  context.closePath();
+  context.fill();
+  context.restore();
+
+  const glass = context.createLinearGradient(24, 20, 196, 276);
+  glass.addColorStop(0, "rgba(255,255,255,0.23)");
+  glass.addColorStop(0.4, "rgba(255,255,255,0.04)");
+  glass.addColorStop(1, "rgba(199,161,108,0.12)");
+  context.fillStyle = glass;
+  context.fill(path);
+  context.strokeStyle = "rgba(168,117,53,0.72)";
+  context.lineWidth = 1.8;
+  context.stroke(path);
+  context.strokeStyle = "rgba(255,255,255,0.92)";
+  context.lineWidth = 2.6;
+  context.beginPath();
+  context.moveTo(83, 14);
+  context.lineTo(137, 14);
+  context.moveTo(85, 25);
+  context.lineTo(135, 25);
+  context.stroke();
+  context.strokeStyle = "rgba(168,117,53,0.35)";
+  context.lineWidth = 1.1;
+  context.beginPath();
+  context.moveTo(75, 8);
+  context.lineTo(145, 8);
+  context.stroke();
   context.restore();
 
   if (ratio === 1) {
     context.save();
-    context.globalAlpha = 0.95;
-    context.fillStyle = "#f1dcaa";
-    for (const [x, y, r] of [[66, 112, 3], [377, 129, 2.5], [41, 309, 2], [398, 347, 3], [91, 540, 2.5], [355, 526, 2]]) {
-      context.beginPath(); context.arc(x, y, r, 0, Math.PI * 2); context.fill();
+    context.fillStyle = "#a87535";
+    for (const [x, y, radius] of [[28, 105, 1.6], [193, 122, 1.4], [23, 220, 1.3], [199, 224, 1.5]] as const) {
+      context.beginPath();
+      context.arc(left + x * scale, top + y * scale, radius * scale, 0, Math.PI * 2);
+      context.fill();
     }
     context.restore();
   }
 }
 
-function vesselPath(context: CanvasRenderingContext2D) {
-  context.beginPath();
-  context.moveTo(176, 28);
-  context.lineTo(264, 28);
-  context.lineTo(264, 94);
-  context.bezierCurveTo(264, 112, 290, 122, 315, 141);
-  context.bezierCurveTo(354, 171, 368, 224, 370, 290);
-  context.bezierCurveTo(373, 372, 364, 454, 349, 503);
-  context.bezierCurveTo(338, 539, 310, 556, 281, 556);
-  context.lineTo(159, 556);
-  context.bezierCurveTo(130, 556, 102, 539, 91, 503);
-  context.bezierCurveTo(76, 454, 67, 372, 70, 290);
-  context.bezierCurveTo(72, 224, 86, 171, 125, 141);
-  context.bezierCurveTo(150, 122, 176, 112, 176, 94);
-  context.closePath();
-}
-
 function drawBrand(context: CanvasRenderingContext2D, x: number, y: number, width: number) {
-  drawTrackedText(context, "PHOTIZO NETWORK INTERNATIONAL", x, y, "600 17px Arial, sans-serif", "#e2ce91", 3.6);
-  drawRule(context, x, y + 30, width);
+  drawTrackedText(context, "PHOTIZO NETWORK INTERNATIONAL", x, y, "600 16px Arial, sans-serif", "#30251f", 2.5);
+  drawRule(context, x, y + 24, width);
 }
 
 function drawFooter(context: CanvasRenderingContext2D, centerX: number, y: number, width: number) {
-  drawRule(context, centerX - width / 2, y - 44, width);
-  drawText(context, "JOIN THE 30-DAY PRAYER STREAK", centerX, y, "600 19px Arial, sans-serif", "#e2ce91", "center");
-  drawText(context, "https://photizonetwork.com/streak", centerX, y + 45, "400 23px Georgia, 'Times New Roman', serif", "#fbf7e9", "center");
-  drawText(context, "ONE DAY AT A TIME · A MORE INTENTIONAL LIFE OF PRAYER", centerX, y + 86, "500 13px Arial, sans-serif", "rgba(245,239,218,0.65)", "center");
+  drawRule(context, centerX - width / 2, y - 38, width);
+  drawText(context, "JOIN THE 30-DAY PRAYER STREAK", centerX, y, "600 16px Arial, sans-serif", "#745c4d", "center");
+  drawText(context, "photizonetwork.com/streak", centerX, y + 42, "500 23px Georgia, 'Times New Roman', serif", "#30251f", "center");
+  drawText(context, "ONE DAY AT A TIME · A MORE INTENTIONAL LIFE OF PRAYER", centerX, y + 78, "500 12px Arial, sans-serif", "#745c4d", "center");
+}
+
+function drawCapsule(context: CanvasRenderingContext2D, text: string, x: number, y: number, background: string, color: string, width?: number) {
+  context.font = "600 13px Arial, sans-serif";
+  const capsuleWidth = width ?? context.measureText(text).width + 34;
+  context.fillStyle = background;
+  context.beginPath();
+  context.roundRect(x, y - 22, capsuleWidth, 36, 18);
+  context.fill();
+  drawText(context, text, x + capsuleWidth / 2, y + 2, "600 13px Arial, sans-serif", color, "center");
+}
+
+function milestoneLabel(day: number, completedDays: number) {
+  if (day === 30) return completedDays === 30 ? "30 days completed" : "Final day check-in";
+  if (day === 21) return "Three-week milestone";
+  if (day === 15) return "Halfway milestone";
+  if (day === 7) return "First-week milestone";
+  return "";
+}
+
+function drawName(context: CanvasRenderingContext2D, name: string, x: number, y: number, width: number, baseSize: number, minimumSize: number, maxLines: number, color: string) {
+  let size = baseSize;
+  let lines: string[];
+  do {
+    lines = wrapText(context, name, width, `500 ${size}px Georgia, 'Times New Roman', serif`);
+    if (lines.length <= maxLines || size <= minimumSize) break;
+    size -= 2;
+  } while (size >= minimumSize);
+
+  const font = `500 ${size}px Georgia, 'Times New Roman', serif`;
+  lines = wrapText(context, name, width, font);
+  const lineHeight = Math.round(size * 1.18);
+  context.font = font;
+  context.fillStyle = color;
+  lines.forEach((line, index) => context.fillText(line, x, y + index * lineHeight, width));
+  return { bottom: y + lines.length * lineHeight };
 }
 
 function drawText(context: CanvasRenderingContext2D, text: string, x: number, y: number, font: string, color: string, align: CanvasTextAlign = "left") {
@@ -314,31 +318,44 @@ function drawTrackedText(context: CanvasRenderingContext2D, text: string, x: num
 }
 
 function drawRule(context: CanvasRenderingContext2D, x: number, y: number, width: number) {
-  const gradient = context.createLinearGradient(x, y, x + width, y);
-  gradient.addColorStop(0, "rgba(223,207,156,0)");
-  gradient.addColorStop(0.2, "rgba(223,207,156,0.68)");
-  gradient.addColorStop(0.8, "rgba(223,207,156,0.68)");
-  gradient.addColorStop(1, "rgba(223,207,156,0)");
-  context.strokeStyle = gradient;
+  context.strokeStyle = "rgba(168,117,53,0.25)";
   context.lineWidth = 1;
-  context.beginPath(); context.moveTo(x, y); context.lineTo(x + width, y); context.stroke();
+  context.beginPath();
+  context.moveTo(x, y);
+  context.lineTo(x + width, y);
+  context.stroke();
 }
 
 function drawWrappedText(context: CanvasRenderingContext2D, text: string, x: number, y: number, width: number, font: string, color: string, maxLines: number, lineHeight: number) {
   context.font = font;
   context.fillStyle = color;
-  for (const [index, line] of wrapText(context, text, width, font).slice(0, maxLines).entries()) context.fillText(line, x, y + index * lineHeight);
+  const lines = wrapText(context, text, width, font).slice(0, maxLines);
+  lines.forEach((line, index) => context.fillText(line, x, y + index * lineHeight));
+  return lines.length;
 }
 
 function wrapText(context: CanvasRenderingContext2D, text: string, maxWidth: number, font: string) {
   context.font = font;
-  const words = text.split(/\s+/);
   const lines: string[] = [];
   let line = "";
-  for (const word of words) {
+  for (const word of text.trim().split(/\s+/)) {
     const candidate = line ? `${line} ${word}` : word;
-    if (line && context.measureText(candidate).width > maxWidth) { lines.push(line); line = word; }
-    else line = candidate;
+    if (!line || context.measureText(candidate).width <= maxWidth) {
+      if (context.measureText(candidate).width <= maxWidth) {
+        line = candidate;
+        continue;
+      }
+    }
+
+    if (line) lines.push(line);
+    line = "";
+    for (const character of Array.from(word)) {
+      const next = line + character;
+      if (line && context.measureText(next).width > maxWidth) {
+        lines.push(line);
+        line = character;
+      } else line = next;
+    }
   }
   if (line) lines.push(line);
   return lines;

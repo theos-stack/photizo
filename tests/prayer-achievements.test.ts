@@ -8,6 +8,8 @@ test("each of the thirty days has a unique encouragement", () => {
   assert.equal(prayerAchievementMessage(1), "A journey of transformation begins here.");
   assert.equal(prayerAchievementMessage(15), "Halfway through. Keep pressing on.");
   assert.equal(prayerAchievementMessage(30), "Thirty days complete. Let the journey continue.");
+  assert.equal(prayerAchievementMessage(30, 30), "Thirty days complete. Let the journey continue.");
+  assert.equal(prayerAchievementMessage(30, 12), "You showed up for Day 30. Keep the journey going.");
 });
 
 test("historic achievement streak is derived from consecutive saved local dates", () => {

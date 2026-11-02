@@ -20,8 +20,11 @@ test("renders sharp square and story achievement PNGs for key journey days", asy
 
   const samples = [
     { name: "day-01-portrait", day: 1, completedDays: 1, streak: 1, format: "portrait" as const, expectedHeight: 1920 },
+    { name: "day-01-square", day: 1, completedDays: 1, streak: 1, format: "square" as const, expectedHeight: 1080 },
+    { name: "day-15-portrait", day: 15, completedDays: 15, streak: 15, format: "portrait" as const, expectedHeight: 1920 },
     { name: "day-15-square", day: 15, completedDays: 11, streak: 3, format: "square" as const, displayName: "A Name That Wraps Elegantly Across the Artwork", expectedHeight: 1080 },
-    { name: "day-30-portrait", day: 30, completedDays: 30, streak: 22, format: "portrait" as const, expectedHeight: 1920 },
+    { name: "day-30-portrait", day: 30, completedDays: 30, streak: 30, format: "portrait" as const, expectedHeight: 1920 },
+    { name: "long-name-portrait", day: 7, completedDays: 6, streak: 1, format: "portrait" as const, displayName: "Ajulo O'Connor Adebayo-Smith, Chinonso Emmanuel", expectedHeight: 1920 },
   ];
 
   for (const sample of samples) {

@@ -3,8 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Check, Copy, Download, ExternalLink, Share2, X } from "lucide-react";
-import { useCallback, useEffect, useId, useState } from "react";
-import { prayerAchievementMessage, renderPrayerAchievementPng, type AchievementFormat } from "@/lib/prayer-achievements";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { ACHIEVEMENT_VESSEL_PATH, prayerAchievementMessage, renderPrayerAchievementPng, type AchievementFormat } from "@/lib/prayer-achievements";
 
 type Stage = "celebrate" | "filling" | "share";
 
@@ -15,7 +15,10 @@ export function ShareMilestone({ day, streak, completedDays, displayName, initia
   const [imageUrl, setImageUrl] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
-  const encouragement = prayerAchievementMessage(day);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLElement>(null);
+  const encouragement = prayerAchievementMessage(day, completedDays);
 
   useEffect(() => {
     if (open) window.sessionStorage.setItem("photizo:achievement:open", "1");
@@ -57,9 +60,36 @@ export function ShareMilestone({ day, streak, completedDays, displayName, initia
 
   useEffect(() => {
     if (!open) return;
-    const onKeyDown = (event: KeyboardEvent) => { if (event.key === "Escape") close(); };
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    window.requestAnimationFrame(() => closeButtonRef.current?.focus());
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        close();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const controls = dialogRef.current?.querySelectorAll<HTMLElement>("a[href],button:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex='-1'])");
+      if (!controls?.length) {
+        event.preventDefault();
+        dialogRef.current?.focus();
+        return;
+      }
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      if (previousFocus?.isConnected) previousFocus.focus();
+    };
   }, [close, open]);
 
   const caption = `I completed Day ${day} of the PHOTIZO 30-Day Prayer Streak! 🙏\n\nOne day at a time, I’m building a more intentional life of prayer.\n\nJoin the journey:\nhttps://photizonetwork.com/streak`;
@@ -113,37 +143,41 @@ export function ShareMilestone({ day, streak, completedDays, displayName, initia
     } finally { setBusy(false); }
   }
 
-  if (!open) return <button type="button" onClick={() => { setMessage(""); setImageUrl(""); setStage("share"); setOpen(true); }} className="rounded-full border border-[var(--dark-moss-green)] px-4 py-2 text-xs font-semibold text-[var(--dark-moss-green)]">View Day {day} achievement</button>;
+  if (!open) return <button ref={triggerRef} type="button" onClick={() => { setMessage(""); setImageUrl(""); setStage("share"); setOpen(true); }} className="rounded-full border border-[var(--dark-moss-green)] px-4 py-2 text-xs font-semibold text-[var(--dark-moss-green)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--evergreen)]">View Day {day} achievement</button>;
 
-  return <div className="fixed inset-0 z-[80] grid place-items-center overflow-y-auto bg-[#0a1710]/85 p-3 backdrop-blur-md sm:p-6" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
-    <section role="dialog" aria-modal="true" aria-labelledby="achievement-title" className="relative my-3 max-h-[96svh] w-full max-w-5xl overflow-y-auto rounded-[30px] border border-[#d9c78f]/50 bg-[#f8f6ef] shadow-[0_30px_120px_rgba(0,0,0,.5)]">
-      <button type="button" aria-label="Close achievement" onClick={close} className="absolute right-4 top-4 z-10 grid h-10 w-10 place-items-center rounded-full border border-black/10 bg-white/85 text-black/60 transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--evergreen)]"><X className="h-4 w-4" aria-hidden="true" /></button>
-      {stage !== "share" ? <div className="grid min-h-[620px] items-center justify-items-center overflow-hidden bg-[radial-gradient(ellipse_at_50%_43%,rgba(214,188,126,.18),transparent_48%),linear-gradient(140deg,#122c20,#1d422e_58%,#10271b)] px-5 py-14 text-center text-white sm:min-h-[700px] sm:py-16">
-        <div className="absolute inset-6 rounded-[24px] border border-[#d9c78f]/20 sm:inset-8" aria-hidden="true" />
+  return <div className="fixed inset-0 z-[80] grid place-items-center overflow-y-auto bg-[#30251f]/55 p-3 backdrop-blur-sm sm:p-6" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
+    <section ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="achievement-title" className="relative my-3 max-h-[96svh] w-full max-w-5xl overflow-y-auto rounded-[30px] border border-[#c7a16c]/35 bg-[#fcf8f1] shadow-[0_28px_90px_rgba(48,37,31,.24)] focus:outline-none">
+      <button ref={closeButtonRef} type="button" aria-label="Close achievement" onClick={close} className="absolute right-4 top-4 z-10 grid h-10 w-10 place-items-center rounded-full border border-[#30251f]/10 bg-white/90 text-[#30251f]/70 transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a87535]"><X className="h-4 w-4" aria-hidden="true" /></button>
+      {stage !== "share" ? <div className="relative grid min-h-[620px] items-center justify-items-center overflow-hidden bg-[radial-gradient(ellipse_at_50%_44%,rgba(243,230,222,.7),transparent_52%),linear-gradient(145deg,#fffdf9,#fcf8f1_66%,#f7eee5)] px-5 py-14 text-center text-[#30251f] sm:min-h-[700px] sm:py-16">
+        <div className="absolute inset-x-8 top-8 h-px bg-[#c7a16c]/35" aria-hidden="true" />
         {stage === "celebrate" ? <div className="relative z-[1] max-w-2xl motion-safe:animate-[fadeUp_.55s_cubic-bezier(.2,.8,.2,1)_both]">
-          <div className="mx-auto grid h-20 w-20 place-items-center rounded-full border border-[#e6d7ac]/50 bg-[#d9c78f]/10 text-[#f0dfaf] shadow-[0_0_45px_rgba(233,207,142,.22)]"><Check className="h-9 w-9" strokeWidth={2.2} aria-hidden="true" /></div>
-          <p className="mt-8 text-[10px] font-semibold uppercase tracking-[.32em] text-[#e2ce91]">PHOTIZO · A MOMENT TO CELEBRATE</p>
-          <h2 id="achievement-title" className="mt-5 font-display text-4xl font-semibold tracking-[-.03em] sm:text-6xl">YES! YOU SHOWED UP.</h2>
-          <p className="mt-4 text-base text-white/75 sm:text-xl">Day {day} Prayer Streak Completed</p>
+          <div className="mx-auto grid h-20 w-20 place-items-center rounded-full border border-[#c7a16c]/55 bg-[#f2e5ce] text-[#8b6337] shadow-[0_8px_28px_rgba(168,117,53,.12)] motion-safe:animate-[fadeUp_.55s_cubic-bezier(.2,.8,.2,1)_both]"><Check className="h-9 w-9" strokeWidth={2.2} aria-hidden="true" /></div>
+          <p className="mt-8 text-[10px] font-semibold uppercase tracking-[.3em] text-[#8b6337]">PHOTIZO · A MOMENT TO CELEBRATE</p>
+          <h2 id="achievement-title" className="mt-5 font-display text-4xl font-semibold tracking-[-.03em] sm:text-6xl">You showed up today.</h2>
+          <p className="mt-4 text-base text-[#745c4d] sm:text-xl">Day {day} Prayer Streak Completed</p>
         </div> : <div className="relative z-[1] flex flex-col items-center motion-safe:animate-[fadeUp_.45s_ease-out_both]">
-          <p className="text-[10px] font-semibold uppercase tracking-[.28em] text-[#e2ce91]">YOUR PRAYER JOURNEY</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[.28em] text-[#8b6337]">YOUR PRAYER JOURNEY</p>
           <ProgressVessel completedDays={completedDays} animate />
-          <p className="mt-5 font-display text-2xl font-semibold text-[#fbf7e9]">{completedDays} of 30 days completed</p>
-          <p className="mt-2 text-xs uppercase tracking-[.15em] text-white/60">{streak} consecutive {streak === 1 ? "day" : "days"} · a separate measure</p>
-          <p className="mt-5 max-w-xl font-display text-lg text-[#e5d6af] sm:text-2xl">{encouragement}</p>
+          <p className="mt-5 font-display text-2xl font-semibold text-[#30251f]">{completedDays} of 30 days completed</p>
+          <p className="mt-2 text-xs uppercase tracking-[.15em] text-[#745c4d]">{streak} consecutive {streak === 1 ? "day" : "days"} · a separate measure</p>
+          <p className="mt-5 max-w-xl font-display text-lg text-[#745c4d] sm:text-2xl">{encouragement}</p>
         </div>}
-        <p className="relative z-[1] mt-9 text-[10px] font-medium uppercase tracking-[.22em] text-white/45">One day at a time · A life of prayer</p>
+        <p className="relative z-[1] mt-9 text-[10px] font-medium uppercase tracking-[.2em] text-[#745c4d]/75">One day at a time · A life of prayer</p>
       </div> : <div className="grid gap-0 lg:grid-cols-[.85fr_1.15fr]">
-        <div className="relative overflow-hidden bg-[radial-gradient(ellipse_at_50%_44%,rgba(213,190,130,.2),transparent_50%),linear-gradient(155deg,#10271b,#1d432e_58%,#10251a)] px-6 py-8 text-white sm:px-9 sm:py-10">
-          <div className="absolute inset-5 rounded-[22px] border border-[#d9c78f]/25 sm:inset-7" aria-hidden="true" />
+        <div className="relative overflow-hidden bg-[radial-gradient(ellipse_at_50%_44%,rgba(243,230,222,.62),transparent_54%),linear-gradient(155deg,#fffdf9,#f8f1e8_70%,#fcf8f1)] px-6 py-8 text-[#30251f] sm:px-9 sm:py-10">
+          <div className="absolute inset-x-8 top-8 h-px bg-[#c7a16c]/40" aria-hidden="true" />
           <div className="relative z-[1] flex h-full flex-col items-center justify-center text-center">
-            <p className="text-[10px] font-semibold uppercase tracking-[.25em] text-[#e2ce91]">PHOTIZO NETWORK INTERNATIONAL</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[.25em] text-[#745c4d]">PHOTIZO NETWORK INTERNATIONAL</p>
+            <h3 className="mt-7 font-display text-3xl font-semibold text-[#30251f]">Prayer Streak</h3>
+            <p className="mt-1 text-xs font-semibold uppercase tracking-[.18em] text-[#a87535]">Day {String(day).padStart(2, "0")} complete</p>
+            <p className="mt-5 text-[10px] font-semibold uppercase tracking-[.2em] text-[#745c4d]">Celebrating</p>
+            <p className="mt-1 max-w-sm break-words font-display text-2xl font-medium text-[#30251f]">{displayName || "Prayer Partner"}</p>
             <div className="mt-7"><ProgressVessel completedDays={completedDays} /></div>
-            <p className="mt-4 font-display text-2xl font-semibold">{completedDays} of 30 days</p>
-            <p className="mt-2 text-xs uppercase tracking-[.13em] text-white/60">{streak} consecutive {streak === 1 ? "day" : "days"}</p>
-            <p className="mt-6 max-w-sm font-display text-xl text-[#e8d9b4]">{encouragement}</p>
-            <p className="mt-8 text-[10px] font-semibold uppercase tracking-[.2em] text-[#e2ce91]">Join the 30-Day Prayer Streak</p>
-            <p className="mt-2 text-xs text-white/75">photizonetwork.com/streak</p>
+            <p className="mt-4 font-display text-xl font-semibold">{completedDays} of 30 days completed</p>
+            <p className="mt-1 text-[10px] uppercase tracking-[.13em] text-[#745c4d]">{streak} consecutive {streak === 1 ? "day" : "days"}</p>
+            <p className="mt-5 max-w-sm font-display text-lg text-[#745c4d]">{encouragement}</p>
+            <p className="mt-7 text-[10px] font-semibold uppercase tracking-[.2em] text-[#745c4d]">Join the 30-Day Prayer Streak</p>
+            <p className="mt-1 text-xs text-[#30251f]">photizonetwork.com/streak</p>
           </div>
         </div>
         <div className="flex min-h-[620px] flex-col p-5 sm:p-8 lg:p-9">
@@ -182,26 +216,28 @@ function ProgressVessel({ completedDays, animate = false }: { completedDays: num
     return () => window.cancelAnimationFrame(frame);
   }, [animate, completedDays]);
   const ratio = Math.max(0, Math.min(1, displayDays / 30));
-  const fillY = 282 - 250 * ratio;
+  const fillBottom = 302;
+  const fillHeight = 284 * ratio;
+  const fillY = fillBottom - fillHeight;
   const full = ratio === 1;
-  return <svg role="img" aria-label={`${completedDays} of 30 prayer days in the progress vessel${full ? ", journey complete" : ""}`} viewBox="0 0 220 300" className={`${animate ? "h-72 w-56" : "h-56 w-44"} overflow-visible ${full ? "drop-shadow-[0_0_18px_rgba(241,220,170,.32)]" : ""}`}>
+  return <svg role="img" aria-label={`${completedDays} of 30 prayer days in the progress vessel${full ? ", journey complete" : ""}`} viewBox="0 0 220 310" className={`${animate ? "h-72 w-56" : "h-56 w-44"} overflow-visible ${full ? "drop-shadow-[0_0_14px_rgba(199,161,108,.28)]" : ""}`}>
     <defs>
-      <linearGradient id={`${clipId}-glass`} x1="0" x2="1" y1="0" y2="1"><stop stopColor="#fff8df" stopOpacity=".25"/><stop offset=".44" stopColor="#fff8df" stopOpacity=".035"/><stop offset="1" stopColor="#dfcf9c" stopOpacity=".16"/></linearGradient>
-      <linearGradient id={`${clipId}-liquid`} x1="0" x2="0" y1="0" y2="1"><stop stopColor="#f5dfa7"/><stop offset=".13" stopColor="#d6b86f"/><stop offset="1" stopColor="#9e7b3d"/></linearGradient>
-      <clipPath id={clipId}><path d="M80 18h60v50c0 13 19 19 31 31 20 18 29 54 29 101 0 37-4 65-13 82-7 13-19 20-34 20H67c-15 0-27-7-34-20-9-17-13-45-13-82 0-47 9-83 29-101 12-12 31-18 31-31V18Z"/></clipPath>
+      <linearGradient id={`${clipId}-glass`} x1="0" x2="1" y1="0" y2="1"><stop stopColor="#fffdf9" stopOpacity=".8"/><stop offset=".44" stopColor="#fffdf9" stopOpacity=".22"/><stop offset="1" stopColor="#c7a16c" stopOpacity=".16"/></linearGradient>
+      <linearGradient id={`${clipId}-liquid`} x1="0" x2="0" y1="0" y2="1"><stop stopColor="#dfc18e"/><stop offset=".2" stopColor="#c7a16c"/><stop offset="1" stopColor="#b4874f"/></linearGradient>
+      <clipPath id={clipId}><path d={ACHIEVEMENT_VESSEL_PATH}/></clipPath>
       <filter id={`${clipId}-glow`} x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="8" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
     </defs>
-    <ellipse cx="110" cy="283" rx="82" ry="9" fill="#d9c78f" opacity=".16" />
-    <path d="M80 18h60v50c0 13 19 19 31 31 20 18 29 54 29 101 0 37-4 65-13 82-7 13-19 20-34 20H67c-15 0-27-7-34-20-9-17-13-45-13-82 0-47 9-83 29-101 12-12 31-18 31-31V18Z" fill={`url(#${clipId}-glass)`} stroke="#eadcae" strokeOpacity=".78" strokeWidth="2.5" />
+    <ellipse cx="110" cy="286" rx="72" ry="7" fill="#745c4d" opacity=".1" />
+    <path d={ACHIEVEMENT_VESSEL_PATH} fill={`url(#${clipId}-glass)`} stroke="#a87535" strokeOpacity=".72" strokeWidth="1.8" />
     <g clipPath={`url(#${clipId})`}>
-      <rect x="20" y={fillY} width="180" height={Math.max(0, 282 - fillY)} fill={`url(#${clipId}-liquid)`} className={animate ? "motion-safe:transition-[y,height] motion-safe:duration-1000 motion-safe:ease-out motion-reduce:transition-none" : ""} />
-      {completedDays > 0 && <path d={`M34 ${fillY} Q110 ${fillY - 7} 186 ${fillY}`} fill="none" stroke="#fff0c5" strokeWidth="2" opacity=".78" filter={full ? `url(#${clipId}-glow)` : undefined} className={animate ? "motion-safe:transition-[d] motion-safe:duration-1000 motion-reduce:transition-none" : ""} />}
-      <path d="M39 134c-9 30-9 91 0 122" fill="none" stroke="#fff8df" strokeOpacity=".4" strokeWidth="3" />
+      <rect x="20" y={fillY} width="180" height={fillHeight} fill={`url(#${clipId}-liquid)`} className={animate ? "motion-safe:transition-[y,height] motion-safe:duration-1000 motion-safe:ease-out motion-reduce:transition-none" : ""} />
+      {completedDays > 0 && <path d={`M34 ${fillY} Q110 ${fillY - 3} 186 ${fillY}`} fill="none" stroke="#fffdf9" strokeWidth="1.5" opacity=".84" filter={full ? `url(#${clipId}-glow)` : undefined} className={animate ? "motion-safe:transition-[d] motion-safe:duration-1000 motion-reduce:transition-none" : ""} />}
+      <path d="M39 134c-9 30-9 91 0 122" fill="none" stroke="#fffdf9" strokeOpacity=".52" strokeWidth="3" />
     </g>
-    <path d="M80 18h60v50c0 13 19 19 31 31 20 18 29 54 29 101 0 37-4 65-13 82-7 13-19 20-34 20H67c-15 0-27-7-34-20-9-17-13-45-13-82 0-47 9-83 29-101 12-12 31-18 31-31V18Z" fill="none" stroke="#f4e8c6" strokeOpacity=".83" strokeWidth="2" />
-    <path d="M80 21h60M82 31h56M38 247q72 17 144 0" fill="none" stroke="#fff5d9" strokeOpacity=".46" strokeWidth="2" />
-    <path d="M81 16h58M84 9h52" fill="none" stroke="#eadcae" strokeWidth="2" strokeLinecap="round" />
-    {full && <g fill="#f6df9d"><circle cx="36" cy="91" r="2"/><circle cx="185" cy="91" r="2.5"/><circle cx="24" cy="186" r="2"/><circle cx="196" cy="194" r="2"/></g>}
-    <text x="110" y="250" textAnchor="middle" fill="#fff8e9" fontSize="13" fontFamily="Arial, sans-serif" fontWeight="600" letterSpacing="1">{completedDays} / 30</text>
+    <path d={ACHIEVEMENT_VESSEL_PATH} fill="none" stroke="#a87535" strokeOpacity=".64" strokeWidth="1.8" />
+    <path d="M80 18h60M82 29h56M38 247q72 17 144 0" fill="none" stroke="#fffdf9" strokeOpacity=".78" strokeWidth="2" />
+    <path d="M81 14h58M84 9h52" fill="none" stroke="#a87535" strokeOpacity=".74" strokeWidth="1.6" strokeLinecap="round" />
+    {full && <g fill="#a87535"><circle cx="36" cy="91" r="1.6"/><circle cx="185" cy="91" r="1.8"/><circle cx="24" cy="186" r="1.5"/><circle cx="196" cy="194" r="1.6"/></g>}
+    <text x="110" y="250" textAnchor="middle" fill="#30251f" fontSize="12" fontFamily="Arial, sans-serif" fontWeight="600" letterSpacing=".5">{completedDays} / 30</text>
   </svg>;
 }
