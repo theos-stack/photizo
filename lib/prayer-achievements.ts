@@ -86,7 +86,7 @@ export async function renderPrayerAchievementPng({ name, day, streak, completedD
   const context = canvas.getContext("2d");
   if (!context) throw new Error("This browser cannot create the achievement image.");
 
-  const safeName = (name || "").trim().slice(0, 100) || "Prayer Partner";
+  const safeName = (name || "").trim().slice(0, 100);
   drawBackground(context, width, height, format);
   if (format === "portrait") drawPortrait(context, safeName, day, streak, completedDays);
   else drawSquare(context, safeName, day, streak, completedDays);
@@ -123,9 +123,12 @@ function drawPortrait(context: CanvasRenderingContext2D, name: string, day: numb
   const milestone = milestoneLabel(day, completedDays);
   if (milestone) drawText(context, milestone.toUpperCase(), left + 3, 455, "600 13px Arial, sans-serif", "#745c4d");
 
-  drawText(context, "CELEBRATING", left, 527, "600 14px Arial, sans-serif", "#745c4d");
-  const nameLayout = drawName(context, name, left, 586, 888, 48, 31, 3, "#30251f");
-  const messageY = Math.max(704, nameLayout.bottom + 39);
+  let messageY = 586;
+  if (name) {
+    drawText(context, "CELEBRATING", left, 527, "600 14px Arial, sans-serif", "#745c4d");
+    const nameLayout = drawName(context, name, left, 586, 888, 48, 31, 3, "#30251f");
+    messageY = Math.max(704, nameLayout.bottom + 39);
+  }
   const messageLines = drawWrappedText(context, prayerAchievementMessage(day, completedDays), left, messageY, 888, "400 31px Georgia, 'Times New Roman', serif", "#745c4d", 3, 41);
 
   const vesselTop = Math.max(842, messageY + messageLines * 41 + 34);
@@ -146,9 +149,12 @@ function drawSquare(context: CanvasRenderingContext2D, name: string, day: number
   const milestone = milestoneLabel(day, completedDays);
   if (milestone) drawText(context, milestone.toUpperCase(), left + 2, 342, "600 11px Arial, sans-serif", "#745c4d");
 
-  drawText(context, "CELEBRATING", left, 424, "600 12px Arial, sans-serif", "#745c4d");
-  const nameLayout = drawName(context, name, left, 472, 465, 39, 26, 3, "#30251f");
-  const messageY = Math.max(600, nameLayout.bottom + 34);
+  let messageY = 472;
+  if (name) {
+    drawText(context, "CELEBRATING", left, 424, "600 12px Arial, sans-serif", "#745c4d");
+    const nameLayout = drawName(context, name, left, 472, 465, 39, 26, 3, "#30251f");
+    messageY = Math.max(600, nameLayout.bottom + 34);
+  }
   const messageLines = drawWrappedText(context, prayerAchievementMessage(day, completedDays), left, messageY, 455, "400 23px Georgia, 'Times New Roman', serif", "#745c4d", 3, 31);
 
   drawVessel(context, 790, 181, 1.11, completedDays);

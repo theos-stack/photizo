@@ -25,6 +25,7 @@ test("renders sharp square and story achievement PNGs for key journey days", asy
     { name: "day-15-square", day: 15, completedDays: 11, streak: 3, format: "square" as const, displayName: "A Name That Wraps Elegantly Across the Artwork", expectedHeight: 1080 },
     { name: "day-30-portrait", day: 30, completedDays: 30, streak: 30, format: "portrait" as const, expectedHeight: 1920 },
     { name: "long-name-portrait", day: 7, completedDays: 6, streak: 1, format: "portrait" as const, displayName: "Ajulo O'Connor Adebayo-Smith, Chinonso Emmanuel", expectedHeight: 1920 },
+    { name: "no-name-square", day: 3, completedDays: 2, streak: 1, format: "square" as const, displayName: "", expectedHeight: 1080 },
   ];
 
   for (const sample of samples) {

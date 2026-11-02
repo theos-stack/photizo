@@ -15,6 +15,7 @@ export function ShareMilestone({ day, streak, completedDays, displayName, initia
   const [imageUrl, setImageUrl] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const memberName = displayName.trim();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLElement>(null);
@@ -170,8 +171,7 @@ export function ShareMilestone({ day, streak, completedDays, displayName, initia
             <p className="text-[10px] font-semibold uppercase tracking-[.25em] text-[#745c4d]">PHOTIZO NETWORK INTERNATIONAL</p>
             <h3 className="mt-7 font-display text-3xl font-semibold text-[#30251f]">Prayer Streak</h3>
             <p className="mt-1 text-xs font-semibold uppercase tracking-[.18em] text-[#a87535]">Day {String(day).padStart(2, "0")} complete</p>
-            <p className="mt-5 text-[10px] font-semibold uppercase tracking-[.2em] text-[#745c4d]">Celebrating</p>
-            <p className="mt-1 max-w-sm break-words font-display text-2xl font-medium text-[#30251f]">{displayName || "Prayer Partner"}</p>
+            {memberName && <><p className="mt-5 text-[10px] font-semibold uppercase tracking-[.2em] text-[#745c4d]">Celebrating</p><p className="mt-1 max-w-sm break-words font-display text-2xl font-medium text-[#30251f]">{memberName}</p></>}
             <div className="mt-7"><ProgressVessel completedDays={completedDays} /></div>
             <p className="mt-4 font-display text-xl font-semibold">{completedDays} of 30 days completed</p>
             <p className="mt-1 text-[10px] uppercase tracking-[.13em] text-[#745c4d]">{streak} consecutive {streak === 1 ? "day" : "days"}</p>
@@ -183,13 +183,13 @@ export function ShareMilestone({ day, streak, completedDays, displayName, initia
         <div className="flex min-h-[620px] flex-col p-5 sm:p-8 lg:p-9">
           <p className="text-[10px] font-semibold uppercase tracking-[.24em] text-[var(--dark-moss-green)]">A keepsake from your journey</p>
           <h2 id="achievement-title" className="mt-2 font-display text-3xl font-semibold text-[#193326] sm:text-4xl">Day {day} · Prayer Streak Completed</h2>
-          <p className="mt-2 text-sm text-black/55">{displayName} · {completedDays} of 30 completed · {streak} consecutive {streak === 1 ? "day" : "days"}</p>
+          <p className="mt-2 text-sm text-black/55">{memberName ? `${memberName} · ` : ""}{completedDays} of 30 completed · {streak} consecutive {streak === 1 ? "day" : "days"}</p>
           <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
             <label className="text-xs font-semibold text-black/60">Share format<select value={format} onChange={(event) => { setImageUrl(""); setFormat(event.target.value as AchievementFormat); }} className="ml-2 min-h-10 rounded-xl border border-black/15 bg-white px-3 text-sm text-[#173326]"><option value="portrait">Story · 1080 × 1920</option><option value="square">Square · 1080 × 1080</option></select></label>
             <span className="rounded-full bg-[#efe8d5] px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-[#705d30]">{day === 30 ? "Journey complete" : `Day ${String(day).padStart(2, "0")} / 30`}</span>
           </div>
           <div className="mt-4 flex min-h-48 flex-1 items-center justify-center overflow-hidden rounded-2xl border border-[#dfd4b8] bg-[#e7e2d6] p-3 sm:min-h-64">
-            {imageUrl ? <Image src={imageUrl} unoptimized width={1080} height={format === "portrait" ? 1920 : 1080} alt={`PHOTIZO Day ${day} prayer streak artwork for ${displayName}, showing ${completedDays} completed days`} className={`${format === "portrait" ? "max-h-[42svh]" : "max-h-[42svh]"} max-w-full rounded-lg object-contain shadow-[0_12px_35px_rgba(12,31,21,.2)]`} /> : <p className="py-16 text-sm text-black/50">Preparing your high-resolution image…</p>}
+            {imageUrl ? <Image src={imageUrl} unoptimized width={1080} height={format === "portrait" ? 1920 : 1080} alt={`PHOTIZO Day ${day} prayer streak artwork, showing ${completedDays} completed days`} className={`${format === "portrait" ? "max-h-[42svh]" : "max-h-[42svh]"} max-w-full rounded-lg object-contain shadow-[0_12px_35px_rgba(12,31,21,.2)]`} /> : <p className="py-16 text-sm text-black/50">Preparing your high-resolution image…</p>}
           </div>
           <div className="mt-5 grid gap-2 sm:grid-cols-2">
             <button type="button" disabled={busy || !imageUrl} onClick={() => void share()} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[var(--evergreen)] px-4 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(23,51,38,.18)] transition hover:bg-[#214a35] disabled:opacity-50"><Share2 className="h-4 w-4" aria-hidden="true" />Share My Prayer Streak</button>
