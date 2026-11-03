@@ -1,34 +1,34 @@
 export const PRAYER_ACHIEVEMENT_MESSAGES = [
-  "A journey of transformation begins here.",
-  "You chose to show up again.",
-  "Something beautiful is taking root.",
-  "Every moment in prayer matters.",
-  "You’re building something that lasts.",
-  "Keep making room for God.",
+  "Your prayer journey begins, one day at a time.",
+  "You made room for prayer again today.",
+  "Small returns can grow into a steady rhythm.",
+  "Every moment you give to prayer matters.",
+  "You’re building a practice worth returning to.",
+  "Keep making room for God in your day.",
   "Seven days of intentional prayer.",
-  "The journey is becoming a rhythm.",
-  "One prayer at a time, keep growing.",
-  "Ten days of making prayer a priority.",
+  "A quiet rhythm is taking shape.",
+  "One prayer, one faithful step forward.",
+  "Ten days of setting time aside for prayer.",
   "Keep returning to what matters.",
-  "Your commitment is worth nurturing.",
-  "Growing deeper, one day at a time.",
-  "Two weeks of choosing prayer.",
-  "Halfway through. Keep pressing on.",
-  "There’s more to discover in His presence.",
+  "Give your commitment a steady place in your day.",
+  "Continue seeking God, one day at a time.",
+  "Two weeks of making room for prayer.",
+  "Halfway through. Stay present for today.",
+  "There is always room to meet God in prayer.",
   "Make space for what matters most.",
-  "The journey continues with grace.",
-  "Keep cultivating a life of prayer.",
-  "Twenty days of intentional devotion.",
-  "Three weeks of showing up.",
-  "Let prayer become your daily rhythm.",
-  "Keep growing in His presence.",
-  "Every day is another opportunity.",
-  "Look how far you’ve come.",
-  "The finish line is drawing closer.",
-  "Keep the flame of prayer alive.",
-  "Twenty-eight days of commitment.",
-  "One more day. The journey continues.",
-  "Thirty days complete. Let the journey continue.",
+  "Keep going with grace, one day at a time.",
+  "Keep tending the habit of prayer.",
+  "Twenty days of showing up with intention.",
+  "Three weeks of choosing a moment for prayer.",
+  "Let prayer shape the rhythm of your day.",
+  "Keep drawing near, one day at a time.",
+  "Today is another opportunity to pray.",
+  "Pause and honor the ground you have covered.",
+  "The finish is closer. Be faithful to today.",
+  "Keep the flame of prayer in your daily rhythm.",
+  "Twenty-eight days of steady devotion.",
+  "One more day in this journey. Keep going.",
+  "Thirty days complete. Carry the rhythm forward.",
 ] as const;
 
 export const ACHIEVEMENT_VESSEL_PATH = "M80 18h60v50c0 13 19 19 31 31 20 18 29 54 29 101 0 37-4 65-13 82-7 13-19 20-34 20H67c-15 0-27-7-34-20-9-17-13-45-13-82 0-47 9-83 29-101 12-12 31-18 31-31V18Z";
@@ -95,8 +95,22 @@ export async function renderPrayerAchievementPng({ name, day, streak, completedD
 }
 
 function drawBackground(context: CanvasRenderingContext2D, width: number, height: number, format: AchievementFormat) {
-  context.fillStyle = "#fcf8f1";
+  context.fillStyle = "#103426";
   context.fillRect(0, 0, width, height);
+
+  const inset = format === "portrait" ? 26 : 20;
+  const radius = format === "portrait" ? 30 : 26;
+  const panel = context.createLinearGradient(0, inset, width, height - inset);
+  panel.addColorStop(0, "#fffdf9");
+  panel.addColorStop(0.52, "#fcf8f1");
+  panel.addColorStop(1, "#f7eee5");
+  context.beginPath();
+  context.roundRect(inset, inset, width - inset * 2, height - inset * 2, radius);
+  context.fillStyle = panel;
+  context.fill();
+  context.strokeStyle = "rgba(211,177,119,0.75)";
+  context.lineWidth = 2;
+  context.stroke();
 
   const glowX = format === "portrait" ? width / 2 : width * 0.72;
   const glowY = format === "portrait" ? height * 0.49 : height * 0.45;
@@ -122,8 +136,9 @@ function drawPortrait(context: CanvasRenderingContext2D, name: string, day: numb
   drawText(context, `DAY ${pad2(day)} COMPLETE`, left + 3, 408, "600 24px Arial, sans-serif", "#a87535");
   const milestone = milestoneLabel(day, completedDays);
   if (milestone) drawText(context, milestone.toUpperCase(), left + 3, 455, "600 13px Arial, sans-serif", "#745c4d");
+  drawProgressRail(context, left + 28, 486, 832, completedDays);
 
-  let messageY = 586;
+  let messageY = 545;
   if (name) {
     drawText(context, "CELEBRATING", left, 527, "600 14px Arial, sans-serif", "#745c4d");
     const nameLayout = drawName(context, name, left, 586, 888, 48, 31, 3, "#30251f");
@@ -131,9 +146,9 @@ function drawPortrait(context: CanvasRenderingContext2D, name: string, day: numb
   }
   const messageLines = drawWrappedText(context, prayerAchievementMessage(day, completedDays), left, messageY, 888, "400 31px Georgia, 'Times New Roman', serif", "#745c4d", 3, 41);
 
-  const vesselTop = Math.max(842, messageY + messageLines * 41 + 34);
+  const vesselTop = Math.max(735, messageY + messageLines * 41 + 30);
   drawVessel(context, 540, vesselTop, 1.36, completedDays);
-  const progressY = Math.max(1325, vesselTop + 420);
+  const progressY = Math.max(1192, vesselTop + 420);
   drawText(context, `${completedDays} OF 30 DAYS COMPLETED`, 540, progressY, "600 21px Arial, sans-serif", "#30251f", "center");
   drawText(context, `CONSECUTIVE STREAK · ${streak} ${streak === 1 ? "DAY" : "DAYS"}`, 540, progressY + 38, "500 16px Arial, sans-serif", "#745c4d", "center");
   if (completedDays === 30) drawText(context, "THIRTY DAYS COMPLETED · KEEP THE RHYTHM", 540, progressY + 72, "600 13px Arial, sans-serif", "#a87535", "center");
@@ -148,8 +163,9 @@ function drawSquare(context: CanvasRenderingContext2D, name: string, day: number
   drawText(context, `DAY ${pad2(day)} COMPLETE`, left + 2, 306, "600 18px Arial, sans-serif", "#a87535");
   const milestone = milestoneLabel(day, completedDays);
   if (milestone) drawText(context, milestone.toUpperCase(), left + 2, 342, "600 11px Arial, sans-serif", "#745c4d");
+  drawProgressRail(context, left + 19, 370, 427, completedDays);
 
-  let messageY = 472;
+  let messageY = 458;
   if (name) {
     drawText(context, "CELEBRATING", left, 424, "600 12px Arial, sans-serif", "#745c4d");
     const nameLayout = drawName(context, name, left, 472, 465, 39, 26, 3, "#30251f");
@@ -179,6 +195,20 @@ function drawVessel(context: CanvasRenderingContext2D, centerX: number, top: num
   context.save();
   context.translate(left, top);
   context.scale(scale, scale);
+
+  const halo = context.createRadialGradient(110, 164, 44, 110, 164, 176);
+  halo.addColorStop(0, "rgba(199,161,108,0.2)");
+  halo.addColorStop(0.68, "rgba(199,161,108,0.07)");
+  halo.addColorStop(1, "rgba(199,161,108,0)");
+  context.fillStyle = halo;
+  context.beginPath();
+  context.arc(110, 164, 176, 0, Math.PI * 2);
+  context.fill();
+  context.strokeStyle = "rgba(168,117,53,0.16)";
+  context.lineWidth = 1;
+  context.beginPath();
+  context.arc(110, 164, 164, 0, Math.PI * 2);
+  context.stroke();
 
   context.save();
   context.shadowColor = ratio === 1 ? "rgba(168,117,53,0.22)" : "rgba(116,92,77,0.12)";
@@ -284,6 +314,21 @@ function milestoneLabel(day: number, completedDays: number) {
   if (day === 15) return "Halfway milestone";
   if (day === 7) return "First-week milestone";
   return "";
+}
+
+function drawProgressRail(context: CanvasRenderingContext2D, x: number, y: number, width: number, completedDays: number) {
+  const gap = 7;
+  const segmentWidth = (width - gap * 29) / 30;
+  context.save();
+  for (let index = 0; index < 30; index += 1) {
+    const segmentX = x + index * (segmentWidth + gap);
+    const complete = index < completedDays;
+    context.fillStyle = complete ? (index === completedDays - 1 ? "#c3944f" : "#174331") : "rgba(16,52,38,0.1)";
+    context.beginPath();
+    context.roundRect(segmentX, y, segmentWidth, 5, 2.5);
+    context.fill();
+  }
+  context.restore();
 }
 
 function drawName(context: CanvasRenderingContext2D, name: string, x: number, y: number, width: number, baseSize: number, minimumSize: number, maxLines: number, color: string) {

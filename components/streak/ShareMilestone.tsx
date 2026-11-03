@@ -149,21 +149,25 @@ export function ShareMilestone({ day, streak, completedDays, displayName, initia
   return <div className="fixed inset-0 z-[80] grid place-items-center overflow-y-auto bg-[#30251f]/55 p-3 backdrop-blur-sm sm:p-6" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
     <section ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="achievement-title" className="relative my-3 max-h-[96svh] w-full max-w-5xl overflow-y-auto rounded-[30px] border border-[#c7a16c]/35 bg-[#fcf8f1] shadow-[0_28px_90px_rgba(48,37,31,.24)] focus:outline-none">
       <button ref={closeButtonRef} type="button" aria-label="Close achievement" onClick={close} className="absolute right-4 top-4 z-10 grid h-10 w-10 place-items-center rounded-full border border-[#30251f]/10 bg-white/90 text-[#30251f]/70 transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a87535]"><X className="h-4 w-4" aria-hidden="true" /></button>
-      {stage !== "share" ? <div className="relative grid min-h-[620px] items-center justify-items-center overflow-hidden bg-[radial-gradient(ellipse_at_50%_44%,rgba(243,230,222,.7),transparent_52%),linear-gradient(145deg,#fffdf9,#fcf8f1_66%,#f7eee5)] px-5 py-14 text-center text-[#30251f] sm:min-h-[700px] sm:py-16">
-        <div className="absolute inset-x-8 top-8 h-px bg-[#c7a16c]/35" aria-hidden="true" />
+      {stage !== "share" ? <div className="relative grid min-h-[620px] items-center justify-items-center overflow-hidden bg-[radial-gradient(ellipse_at_50%_44%,rgba(199,161,108,.22),transparent_52%),linear-gradient(145deg,#0d291e,#174331_60%,#0d291e)] px-5 py-14 text-center text-[#fffdf9] sm:min-h-[700px] sm:py-16">
+        <div className="absolute inset-x-8 top-8 h-px bg-[#d3b177]/55" aria-hidden="true" />
         {stage === "celebrate" ? <div className="relative z-[1] max-w-2xl motion-safe:animate-[fadeUp_.55s_cubic-bezier(.2,.8,.2,1)_both]">
-          <div className="mx-auto grid h-20 w-20 place-items-center rounded-full border border-[#c7a16c]/55 bg-[#f2e5ce] text-[#8b6337] shadow-[0_8px_28px_rgba(168,117,53,.12)] motion-safe:animate-[fadeUp_.55s_cubic-bezier(.2,.8,.2,1)_both]"><Check className="h-9 w-9" strokeWidth={2.2} aria-hidden="true" /></div>
-          <p className="mt-8 text-[10px] font-semibold uppercase tracking-[.3em] text-[#8b6337]">PHOTIZO · A MOMENT TO CELEBRATE</p>
-          <h2 id="achievement-title" className="mt-5 font-display text-4xl font-semibold tracking-[-.03em] sm:text-6xl">You showed up today.</h2>
-          <p className="mt-4 text-base text-[#745c4d] sm:text-xl">Day {day} Prayer Streak Completed</p>
+          <div className="relative mx-auto grid h-24 w-24 place-items-center rounded-full border border-[#e4c68e]/70 bg-[#d8bc87] text-[#103426] shadow-[0_0_0_9px_rgba(211,177,119,.1),0_12px_38px_rgba(0,0,0,.22)] motion-safe:animate-[fadeUp_.55s_cubic-bezier(.2,.8,.2,1)_both]">
+            <span className="absolute inset-[-8px] rounded-full border border-[#e4c68e]/35 motion-safe:animate-[pulse_1.8s_ease-out_infinite] motion-reduce:animate-none" aria-hidden="true" />
+            <Check className="h-11 w-11 motion-safe:animate-[fadeUp_.45s_ease-out_.12s_both]" strokeWidth={2.4} aria-hidden="true" />
+          </div>
+          <p className="mt-8 text-[10px] font-semibold uppercase tracking-[.3em] text-[#e4c68e]">PHOTIZO · A MOMENT TO CELEBRATE</p>
+          <h2 id="achievement-title" className="mt-5 font-display text-4xl font-semibold tracking-[-.03em] text-[#fffdf9] sm:text-6xl">Yes! You showed up.</h2>
+          <p className="mt-4 text-base text-[#f4ead8] sm:text-xl">Day {day} Prayer Streak Completed</p>
+          <p className="mt-3 text-sm text-white/65">One faithful moment, one day at a time.</p>
         </div> : <div className="relative z-[1] flex flex-col items-center motion-safe:animate-[fadeUp_.45s_ease-out_both]">
-          <p className="text-[10px] font-semibold uppercase tracking-[.28em] text-[#8b6337]">YOUR PRAYER JOURNEY</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[.28em] text-[#e4c68e]">YOUR PRAYER JOURNEY</p>
           <ProgressVessel completedDays={completedDays} animate />
-          <p className="mt-5 font-display text-2xl font-semibold text-[#30251f]">{completedDays} of 30 days completed</p>
-          <p className="mt-2 text-xs uppercase tracking-[.15em] text-[#745c4d]">{streak} consecutive {streak === 1 ? "day" : "days"} · a separate measure</p>
-          <p className="mt-5 max-w-xl font-display text-lg text-[#745c4d] sm:text-2xl">{encouragement}</p>
+          <p className="mt-5 font-display text-2xl font-semibold text-[#fffdf9]">{completedDays} of 30 days completed</p>
+          <p className="mt-2 text-xs uppercase tracking-[.15em] text-white/65">{streak} consecutive {streak === 1 ? "day" : "days"} · a separate measure</p>
+          <p className="mt-5 max-w-xl font-display text-lg text-[#f4ead8] sm:text-2xl">{encouragement}</p>
         </div>}
-        <p className="relative z-[1] mt-9 text-[10px] font-medium uppercase tracking-[.2em] text-[#745c4d]/75">One day at a time · A life of prayer</p>
+        <p className="relative z-[1] mt-9 text-[10px] font-medium uppercase tracking-[.2em] text-white/55">One day at a time · A life of prayer</p>
       </div> : <div className="grid gap-0 lg:grid-cols-[.85fr_1.15fr]">
         <div className="relative overflow-hidden bg-[radial-gradient(ellipse_at_50%_44%,rgba(243,230,222,.62),transparent_54%),linear-gradient(155deg,#fffdf9,#f8f1e8_70%,#fcf8f1)] px-6 py-8 text-[#30251f] sm:px-9 sm:py-10">
           <div className="absolute inset-x-8 top-8 h-px bg-[#c7a16c]/40" aria-hidden="true" />

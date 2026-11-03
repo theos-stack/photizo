@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifyAdminRequest } from "@/lib/server/admin-api";
 import { getServerSupabaseClient, getServiceSupabaseClient } from "@/lib/supabase/server";
+import { SIGNED_AUDIO_LINK_TTL_SECONDS } from "@/lib/prayer-music-playback";
 
 const BUCKET = "prayer-music-library";
 
@@ -20,7 +21,7 @@ export async function GET(request: Request, context: RouteContext<"/api/prayer-m
     const admin = await verifyAdminRequest();
     if (!admin.ok) return new Response("Not found", { status: 404 });
   }
-  const { data, error } = await db.storage.from(BUCKET).createSignedUrl(`${id}/audio.${extension}`, 300);
+  const { data, error } = await db.storage.from(BUCKET).createSignedUrl(`${id}/audio.${extension}`, SIGNED_AUDIO_LINK_TTL_SECONDS);
   if (error || !data?.signedUrl) return new Response("Audio is unavailable", { status: 503 });
   return NextResponse.redirect(data.signedUrl, { status: 302, headers: { "Cache-Control": "private, no-store", "Referrer-Policy": "no-referrer" } });
 }

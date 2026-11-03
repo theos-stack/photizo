@@ -31,7 +31,7 @@ test("renders sharp square and story achievement PNGs for key journey days", asy
   for (const sample of samples) {
     const output = await page.evaluate(async (input) => {
       const blob = await window.renderPrayerAchievementPng({
-        name: input.displayName || "Prayer Partner",
+        name: input.displayName || "",
         day: input.day,
         completedDays: input.completedDays,
         streak: input.streak,

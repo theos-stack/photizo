@@ -21,6 +21,8 @@ type Campaign = {
 
 export default async function StreakDashboardPage() {
   const { supabase, user, profile } = await requireMember("/streak/dashboard");
+  const displayName = profile?.display_name?.trim() || String(user.user_metadata?.full_name || user.user_metadata?.name || "");
+  const dashboardProfile = { ...(profile || {}), display_name: displayName };
   const [scheduleProbe, clockProbe] = await Promise.all([
     supabase.from("prayer_challenges").select("id,status,starts_at,campaign_timezone,daily_rollover").eq("slug", CAMPAIGN_SLUG).maybeSingle(),
     supabase.rpc("prayer_campaign_server_now"),
@@ -62,5 +64,5 @@ export default async function StreakDashboardPage() {
   ]);
   const today = getTimeZoneDate(now, timeZone);
   const musicItems = (musicResult.error ? [] : musicResult.data || []) as { id: string; title: string; description: string; provider: "spotify" | "youtube" | "audio"; provider_url: string; sort_order: number }[];
-  return <><MemberBar email={user.email || "Member"}/><main className="py-6 sm:py-10"><Container><PrayerStreakDashboard memberId={user.id} profile={profile} challenge={challenge} enrollment={enrollment ? { ...enrollment, prayer_challenges: challenge } : null} days={daysResult.data || []} checkins={checkinsResult.data || []} achievements={achievementsResult.data || []} musicItems={musicItems} today={today} campaignDay={campaignDay}/></Container></main></>;
+  return <><MemberBar email={user.email || "Member"}/><main className="py-6 sm:py-10"><Container><PrayerStreakDashboard memberId={user.id} profile={dashboardProfile} challenge={challenge} enrollment={enrollment ? { ...enrollment, prayer_challenges: challenge } : null} days={daysResult.data || []} checkins={checkinsResult.data || []} achievements={achievementsResult.data || []} musicItems={musicItems} today={today} campaignDay={campaignDay}/></Container></main></>;
 }

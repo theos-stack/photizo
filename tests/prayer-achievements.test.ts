@@ -5,10 +5,10 @@ import { consecutiveStreakAt, prayerAchievementMessage, PRAYER_ACHIEVEMENT_MESSA
 test("each of the thirty days has a unique encouragement", () => {
   assert.equal(PRAYER_ACHIEVEMENT_MESSAGES.length, 30);
   assert.equal(new Set(PRAYER_ACHIEVEMENT_MESSAGES).size, 30);
-  assert.equal(prayerAchievementMessage(1), "A journey of transformation begins here.");
-  assert.equal(prayerAchievementMessage(15), "Halfway through. Keep pressing on.");
-  assert.equal(prayerAchievementMessage(30), "Thirty days complete. Let the journey continue.");
-  assert.equal(prayerAchievementMessage(30, 30), "Thirty days complete. Let the journey continue.");
+  assert.equal(prayerAchievementMessage(1), "Your prayer journey begins, one day at a time.");
+  assert.equal(prayerAchievementMessage(15), "Halfway through. Stay present for today.");
+  assert.equal(prayerAchievementMessage(30), "Thirty days complete. Carry the rhythm forward.");
+  assert.equal(prayerAchievementMessage(30, 30), "Thirty days complete. Carry the rhythm forward.");
   assert.equal(prayerAchievementMessage(30, 12), "You showed up for Day 30. Keep the journey going.");
 });
 
