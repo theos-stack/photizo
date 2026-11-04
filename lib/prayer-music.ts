@@ -1,4 +1,5 @@
 export type PrayerMusicProvider = "spotify" | "youtube" | "audio";
+export type SpotifyResource = { type: "track" | "album" | "playlist"; id: string };
 
 const licensedAudioExtensions = new Set(["mp3", "m4a", "aac", "ogg", "oga", "wav", "webm"]);
 
@@ -20,7 +21,7 @@ export function getPrayerMusicEmbed(provider: PrayerMusicProvider, rawUrl: strin
 
   if (provider === "spotify") {
     if (url.hostname !== "open.spotify.com") return null;
-    const match = url.pathname.match(/^\/(?:intl-[a-z]{2}\/)?(track|album|playlist)\/([A-Za-z0-9]+)\/?$/i);
+    const match = url.pathname.match(/^\/(?:intl-[a-z]{2}\/)?(?:embed\/)?(track|album|playlist)\/([A-Za-z0-9]{10,22})\/?$/i);
     return match ? `https://open.spotify.com/embed/${match[1].toLowerCase()}/${match[2]}` : null;
   }
 
@@ -37,4 +38,33 @@ export function getPrayerMusicEmbed(provider: PrayerMusicProvider, rawUrl: strin
   if (playlistId && /^[A-Za-z0-9_-]{10,120}$/.test(playlistId)) return `https://www.youtube-nocookie.com/embed/videoseries?list=${encodeURIComponent(playlistId)}`;
   if (videoId && /^[A-Za-z0-9_-]{11}$/.test(videoId)) return `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}`;
   return null;
+}
+
+export function parseSpotifyResource(input: string): SpotifyResource | null {
+  let candidate = input.trim();
+  if (candidate.startsWith("<")) {
+    const iframe = candidate.match(/^<iframe\b[^>]*\bsrc\s*=\s*(?:"([^"]+)"|'([^']+)')[^>]*>\s*(?:<\/iframe\s*>)?$/i);
+    if (!iframe) return null;
+    candidate = iframe[1] || iframe[2] || "";
+  }
+  const embed = getPrayerMusicEmbed("spotify", candidate);
+  if (!embed) return null;
+  const match = embed.match(/^https:\/\/open\.spotify\.com\/embed\/(track|album|playlist)\/([A-Za-z0-9]{10,22})$/);
+  return match ? { type: match[1] as SpotifyResource["type"], id: match[2] } : null;
+}
+
+export function normalizePrayerMusicSource(provider: PrayerMusicProvider, input: string): string | null {
+  if (provider === "spotify") {
+    const resource = parseSpotifyResource(input);
+    return resource ? "https://open.spotify.com/" + resource.type + "/" + resource.id : null;
+  }
+  if (provider === "audio") return isSupportedLicensedAudioUrl(input) ? new URL(input).toString() : null;
+  const embed = getPrayerMusicEmbed(provider, input);
+  if (!embed) return null;
+  if (embed.startsWith("https://www.youtube-nocookie.com/embed/videoseries?")) {
+    const playlistId = new URL(embed).searchParams.get("list");
+    return playlistId ? "https://www.youtube.com/playlist?list=" + encodeURIComponent(playlistId) : null;
+  }
+  const videoId = embed.split("/").pop();
+  return videoId ? "https://www.youtube.com/watch?v=" + encodeURIComponent(videoId) : null;
 }

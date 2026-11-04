@@ -8,22 +8,45 @@ import { hasReachedPrayerMusicLimit, MAX_PRAYER_MUSIC_SECONDS, prayerMusicSeekLi
 export type PrayerMusicItem = { id: string; title: string; description: string; provider: PrayerMusicProvider; provider_url: string; sort_order: number };
 
 export function PrayerMusicPanel({ items }: { items: PrayerMusicItem[] }) {
-  const [selected, setSelected] = useState(items[0]?.id || "");
-  const item = items.find((entry) => entry.id === selected) || items[0];
+  const spotifyItems = items.filter((entry) => entry.provider === "spotify").slice(0, 4);
+  const otherItems = items.filter((entry) => entry.provider !== "spotify");
+  const [selected, setSelected] = useState(otherItems[0]?.id || "");
+  const item = otherItems.find((entry) => entry.id === selected) || otherItems[0];
   const embed = item && item.provider !== "audio" ? getPrayerMusicEmbed(item.provider, item.provider_url) : null;
   return <details className="mt-4 rounded-xl border border-black/10 bg-[#fbfaf6] p-4">
-    <summary className="cursor-pointer text-sm font-semibold text-[var(--dark-moss-green)]">Optional prayer music{items.length > 1 ? ` · ${items.length} selections` : ""}</summary>
+    <summary className="cursor-pointer text-sm font-semibold text-[var(--dark-moss-green)]">Music for Your Prayer Time</summary>
     <div className="mt-3 space-y-3">
-      {items.length > 1 && <label className="block text-xs text-black/60">Choose a selection<select aria-label="Prayer music selection" value={selected} onChange={(event) => setSelected(event.target.value)} className="mt-1 min-h-10 w-full rounded-lg border border-black/15 bg-white px-3 text-sm text-black">{items.map((entry) => <option key={entry.id} value={entry.id}>{entry.title} · {entry.provider === "audio" ? "PHOTIZO audio" : entry.provider}</option>)}</select></label>}
+      <p className="text-xs leading-5 text-black/55">Choose a song to accompany your time in prayer.</p>
+      {spotifyItems.length > 0 && <SpotifyTrackCollection items={spotifyItems} />}
+      {otherItems.length > 1 && <label className="block text-xs text-black/60">Other prayer music<select aria-label="Other prayer music selection" value={selected} onChange={(event) => setSelected(event.target.value)} className="mt-1 min-h-10 w-full rounded-lg border border-black/15 bg-white px-3 text-sm text-black">{otherItems.map((entry) => <option key={entry.id} value={entry.id}>{entry.title} · {entry.provider === "audio" ? "PHOTIZO audio" : entry.provider}</option>)}</select></label>}
       {item?.provider === "audio" ? <LicensedAudioPlayer key={item.id} item={item} /> : item && embed ? <>
         <div><p className="text-sm font-semibold text-[#173326]">{item.title}</p>{item.description && <p className="mt-1 text-xs leading-5 text-black/60">{item.description}</p>}</div>
-        <iframe key={item.id} title={`${item.provider === "spotify" ? "Spotify" : "YouTube"} player: ${item.title}`} src={embed} className="w-full rounded-xl border-0" height={item.provider === "spotify" ? 352 : 220} allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" allowFullScreen loading="lazy" referrerPolicy="strict-origin-when-cross-origin" />
-        <a href={item.provider_url} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 items-center gap-2 text-xs font-semibold text-[var(--dark-moss-green)] underline-offset-4 hover:underline">{item.provider === "spotify" ? "Open in Spotify" : "Open in YouTube"}<ExternalLink className="h-3.5 w-3.5" aria-hidden="true" /></a>
-        {item.provider === "spotify" && <p className="text-[10px] leading-4 text-black/45">This official Spotify embed includes encrypted-media access. Spotify controls whether the selection can play in full here; some browsers or accounts may get a preview only. Open it in Spotify for the playback options available to your account.</p>}
-      </> : <p className="text-xs leading-5 text-black/60">Use the optional browser-generated ambient tones above, or continue praying without music.</p>}
+        <iframe key={item.id} title={"YouTube player: " + item.title} src={embed} className="block w-full max-w-full rounded-xl border-0" height={220} allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" allowFullScreen loading="lazy" referrerPolicy="strict-origin-when-cross-origin" />
+        <a href={item.provider_url} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 items-center gap-2 text-xs font-semibold text-[var(--dark-moss-green)] underline-offset-4 hover:underline">Open in YouTube<ExternalLink className="h-3.5 w-3.5" aria-hidden="true" /></a>
+      </> : null}
+      {!items.length && <p className="text-xs leading-5 text-black/60">Use the optional browser-generated ambient tones above, or continue praying without music.</p>}
       <p className="text-[10px] leading-4 text-black/45">Music is optional and separate from your prayer timer. Playback never records a check-in. Background playback may stop when the browser or phone locks.</p>
     </div>
   </details>;
+}
+
+function SpotifyTrackCollection({ items }: { items: PrayerMusicItem[] }) {
+  const [selected, setSelected] = useState("");
+  const item = items.find((entry) => entry.id === selected);
+  return <div className="space-y-3">
+    <ol className="grid gap-2 sm:grid-cols-2">{items.map((entry, index) => <li key={entry.id}>
+      <button type="button" aria-expanded={selected === entry.id} onClick={() => setSelected(selected === entry.id ? "" : entry.id)} className={"flex min-h-16 w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--dark-moss-green)] " + (selected === entry.id ? "border-[var(--dark-moss-green)] bg-[#edf2e9]" : "border-black/10 bg-white hover:border-[#ad9564]")}>
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#173326] text-white"><Play className="h-4 w-4" aria-hidden="true" /></span>
+        <span className="min-w-0 flex-1"><span className="block text-[9px] font-semibold uppercase tracking-[.18em] text-[#8a7448]">Track {String(index + 1).padStart(2, "0")}</span><span className="mt-0.5 block truncate text-sm font-semibold text-[#173326]">{entry.title}</span>{entry.description && <span className="block truncate text-xs text-black/55">{entry.description}</span>}</span>
+        <span className="shrink-0 text-xs font-semibold text-[var(--dark-moss-green)]">{selected === entry.id ? "Close" : "Listen"}</span>
+      </button>
+    </li>)}</ol>
+    {item && getPrayerMusicEmbed("spotify", item.provider_url) && <div className="min-w-0 rounded-xl border border-[#dfd4b8] bg-white p-3">
+      <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="truncate text-sm font-semibold text-[#173326]">{item.title}</p>{item.description && <p className="truncate text-xs text-black/55">{item.description}</p>}</div><a href={item.provider_url} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 shrink-0 items-center gap-1 text-xs font-semibold text-[var(--dark-moss-green)] underline-offset-4 hover:underline">Listen on Spotify<ExternalLink className="h-3.5 w-3.5" aria-hidden="true" /></a></div>
+      <iframe key={item.id} title={"Spotify player: " + item.title} src={getPrayerMusicEmbed("spotify", item.provider_url) || undefined} className="mt-3 block w-full max-w-full rounded-xl border-0" height="152" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" allowFullScreen loading="lazy" referrerPolicy="strict-origin-when-cross-origin" />
+      <p className="mt-2 text-[10px] leading-4 text-black/45">Spotify controls playback availability. Some tracks or accounts may only play a preview here; use Listen on Spotify for options available to your account.</p>
+    </div>}
+  </div>;
 }
 
 function LicensedAudioPlayer({ item }: { item: PrayerMusicItem }) {

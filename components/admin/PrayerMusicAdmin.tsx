@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/Button";
-import type { PrayerMusicProvider } from "@/lib/prayer-music";
+import { getPrayerMusicEmbed, normalizePrayerMusicSource, type PrayerMusicProvider } from "@/lib/prayer-music";
 
 type Item = { id: string; title: string; description: string; provider: PrayerMusicProvider; provider_url: string; sort_order: number; is_published: boolean };
 
@@ -11,11 +11,18 @@ export function PrayerMusicAdmin({ initial }: { initial: Item[] }) {
   const [provider, setProvider] = useState<PrayerMusicProvider>("spotify");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [url, setUrl] = useState("");
+  const [url, setUrl] = useState(() => initial.some((item) => item.provider === "spotify" && item.provider_url.includes("4fSm5o6HY3N5tNne66EPdC")) ? "" : "https://open.spotify.com/track/4fSm5o6HY3N5tNne66EPdC");
   const [file, setFile] = useState<File | null>(null);
   const [licenseConfirmed, setLicenseConfirmed] = useState(false);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [editingId, setEditingId] = useState("");
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editSource, setEditSource] = useState("");
+  const [previewId, setPreviewId] = useState("");
+  const [previewNew, setPreviewNew] = useState(false);
+  const spotifySlots = items.filter((item) => item.provider === "spotify" && item.is_published).sort((a, b) => a.sort_order - b.sort_order || a.title.localeCompare(b.title)).slice(0, 4);
 
   async function add(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault(); setBusy(true); setMessage("");
@@ -51,14 +58,38 @@ export function PrayerMusicAdmin({ initial }: { initial: Item[] }) {
     finally { setBusy(false); }
   }
 
-  async function update(id: string, changes: Partial<Pick<Item, "is_published" | "sort_order">>) {
+  async function update(id: string, changes: Partial<Pick<Item, "is_published" | "sort_order" | "title" | "description" | "provider_url">>) {
     setBusy(true); setMessage("");
     try {
       const response = await fetch("/api/admin/prayer-streak/music", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, ...changes }) });
       const body = await response.json();
       if (!response.ok) { setMessage(body.error || "Could not update that selection."); return; }
-      setItems((old) => old.map((item) => item.id === id ? { ...item, ...changes } : item));
+      const normalizedChanges = changes.provider_url ? { ...changes, provider_url: normalizePrayerMusicSource("spotify", changes.provider_url) || changes.provider_url } : changes;
+      setItems((old) => old.map((item) => item.id === id ? { ...item, ...normalizedChanges } : item));
+      if (changes.title) setEditingId("");
     } catch { setMessage("Could not reach the music service. Try again."); }
+    finally { setBusy(false); }
+  }
+
+  function edit(item: Item) {
+    setEditingId(item.id); setEditTitle(item.title); setEditDescription(item.description); setEditSource(item.provider_url); setPreviewId("");
+  }
+
+  async function moveSpotify(index: number, direction: -1 | 1) {
+    const target = index + direction;
+    if (target < 0 || target >= spotifySlots.length || busy) return;
+    const reordered = [...spotifySlots];
+    [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
+    const start = Math.min(...spotifySlots.map((item) => item.sort_order));
+    const updates = reordered.map((item, slot) => ({ ...item, sort_order: start + slot }));
+    setBusy(true); setMessage("");
+    try {
+      for (const item of updates) {
+        const response = await fetch("/api/admin/prayer-streak/music", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: item.id, sort_order: item.sort_order }) });
+        if (!response.ok) throw new Error("Could not save the Spotify slot order.");
+      }
+      setItems((old) => old.map((item) => updates.find((updateItem) => updateItem.id === item.id) || item));
+    } catch (cause) { setMessage(cause instanceof Error ? cause.message : "Could not save the Spotify slot order."); }
     finally { setBusy(false); }
   }
 
@@ -88,11 +119,31 @@ export function PrayerMusicAdmin({ initial }: { initial: Item[] }) {
 
   return <section className="rounded-3xl border border-black/10 bg-white p-6 shadow-soft">
     <h2 className="font-display text-2xl font-bold">Prayer music</h2>
-    <p className="mt-1 text-sm text-black/55">Spotify and YouTube use their official embeds. PHOTIZO audio accepts direct HTTPS audio files only when we have permission to stream them. Every selection starts unpublished.</p>
+    <section className="mt-4 rounded-2xl border border-[#d9c79d]/60 bg-[#fbfaf6] p-4 sm:p-5">
+      <h3 className="font-display text-xl font-semibold">Prayer Music: Spotify</h3>
+      <p className="mt-1 text-sm text-black/55">Manage the four Spotify songs available to Prayer Streak participants. Only published selections occupy these slots; unpublishing keeps a track in the library.</p>
+      <ol className="mt-4 grid gap-3 sm:grid-cols-2">{Array.from({ length: 4 }, (_, index) => {
+        const item = spotifySlots[index];
+        return <li key={item?.id || "empty-" + index} className="min-w-0 rounded-2xl border border-black/10 bg-white p-4">
+          <p className="text-[10px] font-semibold uppercase tracking-[.2em] text-[#8a7448]">Slot {index + 1}</p>
+          {item ? <><p className="mt-1 truncate font-semibold text-[#173326]">{item.title}</p>{item.description && <p className="mt-1 truncate text-xs text-black/55">{item.description}</p>}<p className="mt-1 truncate text-[10px] text-black/45">{item.provider_url}</p>
+            {editingId === item.id ? <div className="mt-3 space-y-2">
+              <label className="block text-xs font-medium">Displayed song title<input value={editTitle} maxLength={120} onChange={(event) => setEditTitle(event.target.value)} className="mt-1 min-h-10 w-full rounded-lg border px-3 text-sm" /></label>
+              <label className="block text-xs font-medium">Artist or description<input value={editDescription} maxLength={500} onChange={(event) => setEditDescription(event.target.value)} className="mt-1 min-h-10 w-full rounded-lg border px-3 text-sm" /></label>
+              <label className="block text-xs font-medium">Replace with Spotify link or official embed code<textarea value={editSource} onChange={(event) => setEditSource(event.target.value)} className="mt-1 min-h-16 w-full rounded-lg border p-2 text-xs" /></label>
+              <div className="flex flex-wrap gap-2"><Button type="button" size="sm" disabled={busy} onClick={() => void update(item.id, { title: editTitle, description: editDescription, provider_url: editSource })}>Save changes</Button><Button type="button" size="sm" variant="ghost" onClick={() => setEditingId("")}>Cancel</Button></div>
+            </div> : <div className="mt-3 flex flex-wrap gap-2"><Button type="button" size="sm" variant="ghost" disabled={busy || index === 0} onClick={() => void moveSpotify(index, -1)}>Move up</Button><Button type="button" size="sm" variant="ghost" disabled={busy || index === spotifySlots.length - 1} onClick={() => void moveSpotify(index, 1)}>Move down</Button><Button type="button" size="sm" variant="ghost" onClick={() => edit(item)}>Edit / replace</Button><Button type="button" size="sm" onClick={() => void update(item.id, { is_published: false })}>Remove from slot</Button><Button type="button" size="sm" variant="ghost" onClick={() => setPreviewId(previewId === item.id ? "" : item.id)}>{previewId === item.id ? "Close preview" : "Preview"}</Button></div>}
+            {previewId === item.id && <iframe title={"Spotify preview: " + item.title} src={getPrayerMusicEmbed("spotify", item.provider_url) || undefined} className="mt-3 w-full rounded-xl border-0" height="152" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" allowFullScreen loading="lazy" />}
+          </> : <p className="mt-2 text-sm text-black/50">Empty · add a Spotify song below or publish one from the saved library.</p>}
+        </li>;
+      })}</ol>
+    </section>
+    <p className="mt-3 text-sm text-black/55">YouTube uses its official embed. PHOTIZO audio accepts direct HTTPS audio files only when we have permission to stream them. Spotify playback may be limited by Spotify or the member&apos;s account.</p>
     <form onSubmit={add} className="mt-5 grid gap-3 md:grid-cols-2">
-      <label className="text-sm">Provider<select value={provider} onChange={(event) => { setProvider(event.target.value as PrayerMusicProvider); setLicenseConfirmed(false); }} className="mt-1 min-h-11 w-full rounded-lg border px-3"><option value="spotify">Spotify</option><option value="youtube">YouTube</option><option value="audio">PHOTIZO licensed audio</option></select></label>
+      <label className="text-sm">Provider<select value={provider} onChange={(event) => { setProvider(event.target.value as PrayerMusicProvider); setUrl(""); setPreviewNew(false); setLicenseConfirmed(false); }} className="mt-1 min-h-11 w-full rounded-lg border px-3"><option value="spotify">Spotify</option><option value="youtube">YouTube</option><option value="audio">PHOTIZO licensed audio</option></select></label>
       <label className="text-sm">Title<input required minLength={2} maxLength={120} value={title} onChange={(event) => setTitle(event.target.value)} className="mt-1 min-h-11 w-full rounded-lg border px-3" /></label>
-      {provider === "audio" ? <label className="text-sm md:col-span-2">Authorized audio file<input required type="file" accept="audio/mpeg,audio/mp4,audio/aac,audio/ogg,audio/wav,audio/x-wav,audio/webm,.mp3,.m4a,.aac,.ogg,.wav,.webm" onChange={(event) => setFile(event.target.files?.[0] || null)} className="mt-1 block min-h-11 w-full rounded-lg border px-3 py-2" /><span className="mt-1 block text-xs text-black/45">MP3, M4A, AAC, OGG, WAV or WebM · up to 4 MB · stored privately and streamed through a short-lived signed link.</span></label> : <label className="text-sm md:col-span-2">Provider link<input required type="url" value={url} onChange={(event) => setUrl(event.target.value)} placeholder={provider === "spotify" ? "https://open.spotify.com/playlist/..." : "https://www.youtube.com/watch?v=..."} className="mt-1 min-h-11 w-full rounded-lg border px-3" /><span className="mt-1 block text-xs text-black/45">Use an official Spotify or YouTube URL.</span></label>}
+      {provider === "audio" ? <label className="text-sm md:col-span-2">Authorized audio file<input required type="file" accept="audio/mpeg,audio/mp4,audio/aac,audio/ogg,audio/wav,audio/x-wav,audio/webm,.mp3,.m4a,.aac,.ogg,.wav,.webm" onChange={(event) => setFile(event.target.files?.[0] || null)} className="mt-1 block min-h-11 w-full rounded-lg border px-3 py-2" /><span className="mt-1 block text-xs text-black/45">MP3, M4A, AAC, OGG, WAV or WebM · up to 4 MB · stored privately and streamed through a short-lived signed link.</span></label> : <label className="text-sm md:col-span-2">{provider === "spotify" ? "Spotify song link or official iframe code" : "Provider link"}<textarea required value={url} onChange={(event) => setUrl(event.target.value)} placeholder={provider === "spotify" ? "https://open.spotify.com/track/… or paste Spotify's iframe code" : "https://www.youtube.com/watch?v=..."} className="mt-1 min-h-16 w-full rounded-lg border p-3 text-sm" /><span className="mt-1 block text-xs text-black/45">{provider === "spotify" ? "The supplied fourth track is prefilled. Enter its verified display title and artist, then save; the track is checked against the existing library to prevent duplicates." : "Use an official YouTube URL."}</span></label>}
+      {provider === "spotify" && <div className="md:col-span-2"><Button type="button" size="sm" variant="ghost" disabled={!getPrayerMusicEmbed("spotify", normalizePrayerMusicSource("spotify", url) || "")} onClick={() => setPreviewNew(!previewNew)}>{previewNew ? "Close preview" : "Preview Spotify track"}</Button>{previewNew && getPrayerMusicEmbed("spotify", normalizePrayerMusicSource("spotify", url) || "") && <iframe title="Preview the new Spotify track" src={getPrayerMusicEmbed("spotify", normalizePrayerMusicSource("spotify", url) || "") || undefined} className="mt-3 block w-full max-w-md rounded-xl border-0" height="152" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" allowFullScreen loading="lazy" />}</div>}
       {provider === "audio" && <label className="flex items-start gap-3 text-sm leading-6 text-black/70 md:col-span-2"><input required type="checkbox" checked={licenseConfirmed} onChange={(event) => setLicenseConfirmed(event.target.checked)} className="mt-1" />I confirm this is an original PHOTIZO recording or a recording PHOTIZO is authorized to stream.</label>}
       <label className="text-sm md:col-span-2">{provider === "audio" ? "Artist or attribution (optional)" : "Description (optional)"}<textarea maxLength={500} value={description} onChange={(event) => setDescription(event.target.value)} className="mt-1 min-h-16 w-full rounded-lg border p-3" /></label>
       <Button type="submit" disabled={busy || (provider === "audio" && !licenseConfirmed)} className="md:col-span-2">{busy ? "Saving…" : "Add selection"}</Button>

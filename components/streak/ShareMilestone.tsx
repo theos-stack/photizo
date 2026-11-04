@@ -146,10 +146,10 @@ export function ShareMilestone({ day, streak, completedDays, displayName, initia
 
   if (!open) return <button ref={triggerRef} type="button" onClick={() => { setMessage(""); setImageUrl(""); setStage("share"); setOpen(true); }} className="rounded-full border border-[var(--dark-moss-green)] px-4 py-2 text-xs font-semibold text-[var(--dark-moss-green)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--evergreen)]">View Day {day} achievement</button>;
 
-  return <div className="fixed inset-0 z-[80] grid place-items-center overflow-y-auto bg-[#30251f]/55 p-3 backdrop-blur-sm sm:p-6" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
-    <section ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="achievement-title" className="relative my-3 max-h-[96svh] w-full max-w-5xl overflow-y-auto rounded-[30px] border border-[#c7a16c]/35 bg-[#fcf8f1] shadow-[0_28px_90px_rgba(48,37,31,.24)] focus:outline-none">
+  return <div className="fixed inset-0 z-[80] flex items-center justify-center overflow-hidden bg-[#30251f]/55 p-2 pt-[max(.5rem,env(safe-area-inset-top))] pb-[max(.5rem,env(safe-area-inset-bottom))] backdrop-blur-sm sm:p-5" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
+    <section ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="achievement-title" style={{ height: "calc(100dvh - max(1rem, env(safe-area-inset-top)) - max(1rem, env(safe-area-inset-bottom)))" }} className="relative flex h-[calc(100vh-1rem)] max-h-[96svh] w-full max-w-5xl flex-col overflow-hidden rounded-[22px] border border-[#c7a16c]/35 bg-[#fcf8f1] shadow-[0_28px_90px_rgba(48,37,31,.24)] focus:outline-none sm:rounded-[30px]">
       <button ref={closeButtonRef} type="button" aria-label="Close achievement" onClick={close} className="absolute right-4 top-4 z-10 grid h-10 w-10 place-items-center rounded-full border border-[#30251f]/10 bg-white/90 text-[#30251f]/70 transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a87535]"><X className="h-4 w-4" aria-hidden="true" /></button>
-      {stage !== "share" ? <div className="relative grid min-h-[620px] items-center justify-items-center overflow-hidden bg-[radial-gradient(ellipse_at_50%_44%,rgba(199,161,108,.22),transparent_52%),linear-gradient(145deg,#0d291e,#174331_60%,#0d291e)] px-5 py-14 text-center text-[#fffdf9] sm:min-h-[700px] sm:py-16">
+      {stage !== "share" ? <div className="relative grid min-h-0 flex-1 items-center justify-items-center overflow-y-auto bg-[radial-gradient(ellipse_at_50%_44%,rgba(199,161,108,.22),transparent_52%),linear-gradient(145deg,#0d291e,#174331_60%,#0d291e)] px-5 py-8 text-center text-[#fffdf9] sm:py-12">
         <div className="absolute inset-x-8 top-8 h-px bg-[#d3b177]/55" aria-hidden="true" />
         {stage === "celebrate" ? <div className="relative z-[1] max-w-2xl motion-safe:animate-[fadeUp_.55s_cubic-bezier(.2,.8,.2,1)_both]">
           <div className="relative mx-auto grid h-24 w-24 place-items-center rounded-full border border-[#e4c68e]/70 bg-[#d8bc87] text-[#103426] shadow-[0_0_0_9px_rgba(211,177,119,.1),0_12px_38px_rgba(0,0,0,.22)] motion-safe:animate-[fadeUp_.55s_cubic-bezier(.2,.8,.2,1)_both]">
@@ -169,7 +169,7 @@ export function ShareMilestone({ day, streak, completedDays, displayName, initia
         </div>}
         <p className="relative z-[1] mt-9 text-[10px] font-medium uppercase tracking-[.2em] text-white/55">One day at a time · A life of prayer</p>
       </div> : <div className="grid gap-0 lg:grid-cols-[.85fr_1.15fr]">
-        <div className="relative overflow-hidden bg-[radial-gradient(ellipse_at_50%_44%,rgba(243,230,222,.62),transparent_54%),linear-gradient(155deg,#fffdf9,#f8f1e8_70%,#fcf8f1)] px-6 py-8 text-[#30251f] sm:px-9 sm:py-10">
+        <div className="relative hidden overflow-hidden bg-[radial-gradient(ellipse_at_50%_44%,rgba(243,230,222,.62),transparent_54%),linear-gradient(155deg,#fffdf9,#f8f1e8_70%,#fcf8f1)] px-6 py-8 text-[#30251f] lg:block lg:px-9 lg:py-10">
           <div className="absolute inset-x-8 top-8 h-px bg-[#c7a16c]/40" aria-hidden="true" />
           <div className="relative z-[1] flex h-full flex-col items-center justify-center text-center">
             <p className="text-[10px] font-semibold uppercase tracking-[.25em] text-[#745c4d]">PHOTIZO NETWORK INTERNATIONAL</p>
@@ -184,25 +184,25 @@ export function ShareMilestone({ day, streak, completedDays, displayName, initia
             <p className="mt-1 text-xs text-[#30251f]">photizonetwork.com/streak</p>
           </div>
         </div>
-        <div className="flex min-h-[620px] flex-col p-5 sm:p-8 lg:p-9">
-          <p className="text-[10px] font-semibold uppercase tracking-[.24em] text-[var(--dark-moss-green)]">A keepsake from your journey</p>
-          <h2 id="achievement-title" className="mt-2 font-display text-3xl font-semibold text-[#193326] sm:text-4xl">Day {day} · Prayer Streak Completed</h2>
-          <p className="mt-2 text-sm text-black/55">{memberName ? `${memberName} · ` : ""}{completedDays} of 30 completed · {streak} consecutive {streak === 1 ? "day" : "days"}</p>
-          <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-            <label className="text-xs font-semibold text-black/60">Share format<select value={format} onChange={(event) => { setImageUrl(""); setFormat(event.target.value as AchievementFormat); }} className="ml-2 min-h-10 rounded-xl border border-black/15 bg-white px-3 text-sm text-[#173326]"><option value="portrait">Story · 1080 × 1920</option><option value="square">Square · 1080 × 1080</option></select></label>
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-3 sm:p-6 lg:min-h-[620px] lg:overflow-y-auto lg:p-9">
+          <p className="shrink-0 pr-10 text-[9px] font-semibold uppercase tracking-[.2em] text-[var(--dark-moss-green)] sm:text-[10px] sm:tracking-[.24em]">A keepsake from your journey</p>
+          <h2 id="achievement-title" className="mt-1 shrink-0 pr-10 font-display text-xl font-semibold leading-tight text-[#193326] sm:mt-2 sm:text-3xl lg:text-4xl">Day {day} · Prayer Streak Completed</h2>
+          <p className="mt-1 shrink-0 text-xs text-black/55 sm:mt-2 sm:text-sm">{memberName ? `${memberName} · ` : ""}{completedDays} of 30 completed · {streak} consecutive {streak === 1 ? "day" : "days"}</p>
+          <div className="mt-2 flex shrink-0 flex-wrap items-center justify-between gap-2 sm:mt-4">
+            <label className="text-[10px] font-semibold text-black/60 sm:text-xs">Format<select value={format} onChange={(event) => { setImageUrl(""); setFormat(event.target.value as AchievementFormat); }} className="ml-2 min-h-9 rounded-xl border border-black/15 bg-white px-2 text-xs text-[#173326] sm:px-3 sm:text-sm"><option value="portrait">Story · 1080 × 1920</option><option value="square">Square · 1080 × 1080</option></select></label>
             <span className="rounded-full bg-[#efe8d5] px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-[#705d30]">{day === 30 ? "Journey complete" : `Day ${String(day).padStart(2, "0")} / 30`}</span>
           </div>
-          <div className="mt-4 flex min-h-48 flex-1 items-center justify-center overflow-hidden rounded-2xl border border-[#dfd4b8] bg-[#e7e2d6] p-3 sm:min-h-64">
-            {imageUrl ? <Image src={imageUrl} unoptimized width={1080} height={format === "portrait" ? 1920 : 1080} alt={`PHOTIZO Day ${day} prayer streak artwork, showing ${completedDays} completed days`} className={`${format === "portrait" ? "max-h-[42svh]" : "max-h-[42svh]"} max-w-full rounded-lg object-contain shadow-[0_12px_35px_rgba(12,31,21,.2)]`} /> : <p className="py-16 text-sm text-black/50">Preparing your high-resolution image…</p>}
+          <div className="mt-2 flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-2xl border border-[#dfd4b8] bg-[#e7e2d6] p-2 sm:mt-4 sm:p-3">
+            {imageUrl ? <Image src={imageUrl} unoptimized width={1080} height={format === "portrait" ? 1920 : 1080} alt={`PHOTIZO Day ${day} prayer streak artwork, showing ${completedDays} completed days`} className="max-h-[30dvh] max-w-full rounded-lg object-contain shadow-[0_12px_35px_rgba(12,31,21,.2)] sm:max-h-[38svh]" /> : <p className="text-center text-xs text-black/50">Preparing your preview…</p>}
           </div>
-          <div className="mt-5 grid gap-2 sm:grid-cols-2">
-            <button type="button" disabled={busy || !imageUrl} onClick={() => void share()} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[var(--evergreen)] px-4 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(23,51,38,.18)] transition hover:bg-[#214a35] disabled:opacity-50"><Share2 className="h-4 w-4" aria-hidden="true" />Share My Prayer Streak</button>
-            <button type="button" disabled={busy || !imageUrl} onClick={() => void download()} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[var(--dark-moss-green)] px-4 text-sm font-semibold text-[var(--dark-moss-green)] transition hover:bg-[#edf2e9] disabled:opacity-50"><Download className="h-4 w-4" aria-hidden="true" />Download Image</button>
-            <button type="button" onClick={() => void copyCaption()} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-black/10 px-4 text-sm font-semibold text-black/65 transition hover:bg-black/5"><Copy className="h-4 w-4" aria-hidden="true" />Copy caption</button>
-            <Link href="/streak/dashboard" onClick={() => { setOpen(false); onContinue?.(); }} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold text-black/60 transition hover:bg-black/5">Continue<ExternalLink className="h-3.5 w-3.5 rotate-45" aria-hidden="true" /></Link>
+          <div className="mt-2 grid shrink-0 grid-cols-2 gap-2 sm:mt-4">
+            <button type="button" disabled={busy} onClick={() => void share()} className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-[var(--evergreen)] px-2 text-xs font-semibold text-white shadow-[0_8px_20px_rgba(23,51,38,.18)] transition hover:bg-[#214a35] disabled:opacity-50 sm:min-h-12 sm:gap-2 sm:px-4 sm:text-sm"><Share2 className="h-4 w-4 shrink-0" aria-hidden="true" />Share Achievement</button>
+            <button type="button" disabled={busy} onClick={() => void download()} className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full border border-[var(--dark-moss-green)] px-2 text-xs font-semibold text-[var(--dark-moss-green)] transition hover:bg-[#edf2e9] disabled:opacity-50 sm:min-h-12 sm:gap-2 sm:px-4 sm:text-sm"><Download className="h-4 w-4 shrink-0" aria-hidden="true" />Download Image</button>
+            <button type="button" onClick={() => void copyCaption()} className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-full border border-black/10 px-2 text-[11px] font-semibold text-black/65 transition hover:bg-black/5 sm:min-h-11 sm:px-4 sm:text-sm"><Copy className="h-4 w-4" aria-hidden="true" />Copy caption</button>
+            <Link href="/streak/dashboard" onClick={() => { setOpen(false); onContinue?.(); }} className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-full px-2 text-[11px] font-semibold text-black/60 transition hover:bg-black/5 sm:min-h-11 sm:px-4 sm:text-sm">Continue<ExternalLink className="h-3.5 w-3.5 rotate-45" aria-hidden="true" /></Link>
           </div>
-          {message && <p role="status" aria-live="polite" className="mt-3 min-h-5 text-center text-xs leading-5 text-[var(--dark-moss-green)]">{message}</p>}
-          <p className="mt-2 text-center text-[10px] leading-4 text-black/40">The vessel counts completed days. Your consecutive streak is shown separately.</p>
+          {message && <p role="status" aria-live="polite" className="mt-1 shrink-0 text-center text-[10px] leading-4 text-[var(--dark-moss-green)] sm:mt-3 sm:text-xs sm:leading-5">{message}</p>}
+          <p className="mt-1 hidden shrink-0 text-center text-[10px] leading-4 text-black/40 sm:block">The vessel counts completed days. Your consecutive streak is shown separately.</p>
         </div>
       </div>}
       {stage !== "share" && <div className="sr-only" role="status" aria-live="polite">{stage === "celebrate" ? `Day ${day} prayer check-in confirmed.` : `${completedDays} of 30 prayer days completed. ${encouragement}`}</div>}
