@@ -1,6 +1,7 @@
 import "server-only";
 
 import { getServiceSupabaseClient, getServerSupabaseClient } from "@/lib/supabase/server";
+import { findAdminRecord, resolveAdminRole } from "@/lib/admin-access-core";
 import type { AdminRole, AdminUser } from "@/lib/types";
 
 type AdminLookupClient =
@@ -20,19 +21,30 @@ export async function getAdminRecordByEmail(
 ) {
   const normalizedEmail = email.trim().toLowerCase();
   const serviceSupabase = getServiceSupabaseClient();
-  const client = serviceSupabase || fallbackClient;
+  const clients = [serviceSupabase, fallbackClient].filter(
+    (client, index, all): client is NonNullable<typeof client> =>
+      Boolean(client) && all.indexOf(client) === index,
+  );
 
-  if (!client) {
-    return null;
-  }
+  const record = await findAdminRecord<AdminUser>(
+    clients.map((client) => async () => {
+      const { data, error } = await client
+        .from("admin_users")
+        .select("id, email, full_name, role, created_at")
+        .eq("email", normalizedEmail)
+        .maybeSingle();
 
-  const { data } = await client
-    .from("admin_users")
-    .select("id, email, full_name, role, created_at")
-    .eq("email", normalizedEmail)
-    .maybeSingle();
+      if (error) {
+        console.warn("[admin-access] admin_users lookup failed", {
+          code: error.code,
+        });
+      }
 
-  return (data as AdminUser | null) ?? null;
+      return { data: data as AdminUser | null, error };
+    }),
+  );
+
+  return record ?? null;
 }
 
 export async function resolveAdminAccess(
@@ -43,15 +55,7 @@ export async function resolveAdminAccess(
   const configuredSuperAdmins = getConfiguredSuperAdminEmails();
   const adminRecord = await getAdminRecordByEmail(normalizedEmail, fallbackClient);
   const isBootstrapSuperAdmin = configuredSuperAdmins.includes(normalizedEmail);
-  const dbRole =
-    adminRecord?.role === "super_admin"
-      ? "super_admin"
-      : adminRecord?.role === "admin"
-        ? "admin"
-        : null;
-  const role: AdminRole | null = isBootstrapSuperAdmin
-    ? "super_admin"
-    : dbRole;
+  const role: AdminRole | null = resolveAdminRole(adminRecord?.role, isBootstrapSuperAdmin);
 
   return {
     adminRecord,
